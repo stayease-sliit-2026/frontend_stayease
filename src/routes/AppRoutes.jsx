@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
-import Dashboard from '../pages/Dashboard';
-import Login from '../pages/Login';
+import Home from '../pages/Home';
+import Login from '../pages/auth_pages/Login';
+import Register from '../pages/auth_pages/Register';
 import NotFound from '../pages/NotFound';
 import useAuth from '../hooks/useAuth';
 
@@ -13,14 +14,8 @@ export default function AppRoutes() {
 	return (
 		<Routes>
 			<Route path="/login" element={<Login />} />
-			<Route
-				path="/"
-				element={
-					<ProtectedRoute>
-						<Dashboard />
-					</ProtectedRoute>
-				}
-			/>
+			<Route path="/register" element={<Register />} />
+			<Route path="/" element={<Home />} />
 			<Route path="*" element={<NotFound />} />
 		</Routes>
 	);
