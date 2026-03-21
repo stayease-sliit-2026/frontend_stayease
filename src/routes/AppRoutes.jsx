@@ -21,7 +21,7 @@ export default function AppRoutes() {
 			<Route path="/" element={<Home />} />
 			<Route path="/hotel-service/*" element={<HotelServiceRoutes />} />
 			<Route path="/hotel-admin/*" element={<HotelAdminRoutes />} />
-			<Route path="/booking-service/*" element={<BookingServiceRoutes />} />
+			<Route path="/booking-service/*" element={<ProtectedRoute><BookingServiceRoutes /></ProtectedRoute>} />
 			<Route path="*" element={<NotFound />} />
 		</Routes>
 	);

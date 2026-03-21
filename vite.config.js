@@ -3,15 +3,33 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
-  const hotelServiceTarget = env.VITE_HOTEL_SERVICE_URL || env.VITE_API_BASE_URL || 'http://localhost:5000';
+  // single API base / gateway used in development
+  const apiBase = env.VITE_API_BASE_URL || 'http://localhost:8080';
 
   return {
     plugins: [react()],
     server: {
       proxy: {
-        '/hotels': {
-          target: hotelServiceTarget,
+        // forward API paths to the API gateway (or direct service if you prefer)
+        '/auth': {
+          target: apiBase,
           changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/auth/, '/auth'),
+        },
+        '/hotels': {
+          target: apiBase,
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/hotels/, '/hotels'),
+        },
+        '/bookings': {
+          target: apiBase,
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/bookings/, '/bookings'),
+        },
+        '/payments': {
+          target: apiBase,
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/payments/, '/payments'),
         },
       },
     },
