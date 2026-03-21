@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
 import useLogin  from '../../hooks/useLogin';
+import AppRoutes from '../../routes/AppRoutes';
 
 const navLinks = [
 	{ to: '/', label: 'Home' },
@@ -13,10 +14,19 @@ export default function Navbar() {
 	const { user, logout } = useAuth();
 
 	// Remove session tokens on logout
-	const handleLogout = () => {
-		sessionStorage.removeItem('authToken');
-		sessionStorage.removeItem('adminAuthToken');
-		logout();
+	const handleLogout = () => {     
+		try{
+			if(sessionStorage.getItem('authToken')) {
+				sessionStorage.removeItem('authToken');
+			}
+			if(sessionStorage.getItem('adminAuthToken')) {
+				sessionStorage.removeItem('adminAuthToken');
+			}
+			logout();
+			window.location.reload(); // Refresh the page after logout
+		}catch(err) {
+			console.error('Error during logout:', err);
+		}
 	};
 	const location = useLocation();
 	const isAuthPage = location.pathname === '/login' || location.pathname === '/register';

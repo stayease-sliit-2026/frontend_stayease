@@ -28,12 +28,12 @@ export default function useLogin() {
     setError('');
     try {
       const response = await api.post(AppUrl.APP_URL_MAIN + AppUrl.LOGIN_URL, { email, password });
+      console.log('Admin login response:', response);
       setLoading(false);  
       if (response.data && response.data.token) {
         sessionStorage.setItem('adminAuthToken', response.data.token);
       }
-      console.log('Admin login successful:', response.data);
-      return response.status;
+      return response;
     } catch (err) {
       console.error('Admin login error:', err);
       setError(err.response?.data?.message || 'Admin login failed. Please try again.');

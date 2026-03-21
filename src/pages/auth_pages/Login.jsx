@@ -19,10 +19,10 @@ function Login() {
             return;
         }
         const result = await loginRequest(email, password);
-        
-        if (result.status==200){
-            console.log('Login successful',result);
-            navigate('/', { replace: true });
+        if (result && result.status === 200 && result.data && result.data.token) {
+            console.log(result);
+            login(email, result.data.token);
+            window.location.reload(); // Refresh the page after login
         }
         // error is handled by the hook
     };

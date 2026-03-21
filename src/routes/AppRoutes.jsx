@@ -19,30 +19,30 @@ export default function AppRoutes() {
 	const location = useLocation();
 	const [hasUserToken, setHasUserToken] = useState(() => !!sessionStorage.getItem('authToken'));
 	const [hasAdminToken, setHasAdminToken] = useState(() => !!sessionStorage.getItem('adminAuthToken'));
-	const userTokenRef = useRef(hasUserToken);
-	const adminTokenRef = useRef(hasAdminToken);
+	// const userTokenRef = useRef(hasUserToken);
+	// const adminTokenRef = useRef(hasAdminToken);
 
-	useEffect(() => {
-		const checkTokens = () => {
-			const userToken = !!sessionStorage.getItem('authToken');
-			const adminToken = !!sessionStorage.getItem('adminAuthToken');
-			if (userToken !== userTokenRef.current) {
-				userTokenRef.current = userToken;
-				setHasUserToken(userToken);
-			}
-			if (adminToken !== adminTokenRef.current) {
-				adminTokenRef.current = adminToken;
-				setHasAdminToken(adminToken);
-			}
-		};
-		window.addEventListener('storage', checkTokens);
-		return () => {
-			window.removeEventListener('storage', checkTokens);
-		};
-	}, []);
+	// useEffect(() => {
+	// 	const checkTokens = () => {
+	// 		const userToken = !!sessionStorage.getItem('authToken');
+	// 		const adminToken = !!sessionStorage.getItem('adminAuthToken');
+	// 		if (userToken !== userTokenRef.current) {
+	// 			userTokenRef.current = userToken;
+	// 			setHasUserToken(userToken);
+	// 		}
+	// 		if (adminToken !== adminTokenRef.current) {
+	// 			adminTokenRef.current = adminToken;
+	// 			setHasAdminToken(adminToken);
+	// 		}
+	// 	};
+	// 	window.addEventListener('storage', checkTokens);
+	// 	return () => {
+	// 		window.removeEventListener('storage', checkTokens);
+	// 	};
+	// }, []);
 
 	// 🔐 NOT LOGGED IN
-	if (!hasUserToken && !hasAdminToken) {
+	if (sessionStorage.getItem('adminAuthToken') === null && sessionStorage.getItem('authToken') === null) {
 		return (
 			<Routes >
 				<Route path="/login" element={<Login />} />
@@ -55,7 +55,7 @@ export default function AppRoutes() {
 	}
 
 	// 🛠 ADMIN
-	if (hasAdminToken) {
+	if (sessionStorage.getItem('adminAuthToken')) {
 		return (
 			<Routes>
 				<Route path="/admin/dashboard" element={<AdminDashboard />} />
@@ -69,6 +69,7 @@ export default function AppRoutes() {
 	// 👤 USER
 	return (
 		<Routes>
+            <Route path='/home' element={<Home />} />
 			<Route path="/" element={<Home />} />
 			<Route path="/profile" element={
 				<ProtectedRoute>

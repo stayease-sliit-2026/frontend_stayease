@@ -18,10 +18,10 @@ export default function AdminLogin() {
     setError('');
     setLoading(true);
     try {
-      const result = await handleAdminLogin(email, password);
+      const response = await handleAdminLogin(email, password);
       setLoading(false);
-      console.log(result);
-      if (result == 200) {
+      if (response && response.status === 200 && response.data && response.data.token) {
+        sessionStorage.setItem('adminAuthToken', response.data.token);
         navigate('/admin/dashboard', { replace: true });
       } else {
         setError('Invalid credentials or server error.');
