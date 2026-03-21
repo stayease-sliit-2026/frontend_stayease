@@ -82,19 +82,33 @@ export default function Home() {
               onMouseOut={e => e.currentTarget.style.background = '#0a2342'}
             >Search</button>
           </div>
-          <a href="/register" style={{
-            background: 'linear-gradient(90deg, #4fd1c5 0%, #2563eb 100%)',
-            color: '#fff',
-            fontWeight: 700,
-            borderRadius: '10px',
-            padding: '18px 44px',
-            fontSize: '1.2rem',
-            textDecoration: 'none',
-            boxShadow: '0 4px 24px rgba(10,35,66,0.12)',
-            transition: 'background 0.2s, color 0.2s',
-            display: 'inline-block',
-            marginTop: 8,
-          }}>Get Started</a>
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 8 }}>
+            <a href="/register" style={{
+              background: 'linear-gradient(90deg, #4fd1c5 0%, #2563eb 100%)',
+              color: '#fff',
+              fontWeight: 700,
+              borderRadius: '10px',
+              padding: '18px 44px',
+              fontSize: '1.2rem',
+              textDecoration: 'none',
+              boxShadow: '0 4px 24px rgba(10,35,66,0.12)',
+              transition: 'background 0.2s, color 0.2s',
+              display: 'inline-block',
+            }}>Get Started</a>
+            <a href="/hotel-service/" style={{
+              background: 'transparent',
+              color: '#fff',
+              fontWeight: 700,
+              borderRadius: '10px',
+              padding: '18px 36px',
+              fontSize: '1.2rem',
+              textDecoration: 'none',
+              border: '2px solid #4fd1c5',
+              boxShadow: '0 4px 24px rgba(10,35,66,0.10)',
+              transition: 'background 0.2s, color 0.2s',
+              display: 'inline-block',
+            }}>Explore Hotels</a>
+          </div>
         </div>
         <div style={{
           flex: '1 1 420px',
