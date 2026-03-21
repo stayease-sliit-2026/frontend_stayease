@@ -6,15 +6,16 @@ export default function useRegister() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const registerRequest = async (name, email, password) => {
+  const registerRequest = async (name, email, password, mobile) => {
     setLoading(true);
     setError('');
     try {
-        console.log('Attempting registration with:', { name, email, password, url: AppUrl.APP_URL_MAIN+AppUrl.REGISTER_URL });
-      const response = await api.post(AppUrl.APP_URL_MAIN+AppUrl.REGISTER_URL, {
+      console.log('Attempting registration with:', { name, email, password, mobile, url: AppUrl.APP_URL_MAIN + AppUrl.REGISTER_URL });
+      const response = await api.post(AppUrl.APP_URL_MAIN + AppUrl.REGISTER_URL, {
         name,
         email,
         password,
+        mobile,
       });
       setLoading(false);
       if (response.data && response.data.token) {
