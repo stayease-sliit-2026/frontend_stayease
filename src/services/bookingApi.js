@@ -3,7 +3,7 @@ import axios from 'axios'
 const BOOKING_BASE_URL =
   import.meta.env.VITE_BOOKING_SERVICE_BASE_URL ||
   import.meta.env.VITE_API_BASE_URL ||
-  'http://localhost:3000'
+  'http://localhost:3003'
 
 const bookingApi = axios.create({
   baseURL: BOOKING_BASE_URL,

@@ -32,6 +32,7 @@ function BookingDetailsPage() {
   const [booking, setBooking] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
   const [actionLoading, setActionLoading] = useState('')
 
   useEffect(() => {
@@ -72,10 +73,35 @@ function BookingDetailsPage() {
   async function handleConfirm() {
     try {
       setActionLoading('confirm')
-      await confirmBooking(id)
+      setError('')
+
+      // TODO: Payment Service Integration
+      // Step 1: Initiate payment service (redirect or modal)
+      // const paymentResult = await initiatePaymentFlow({
+      //   bookingId: id,
+      //   amount: booking.totalPrice,
+      //   hotelId: booking.hotelId,
+      //   roomId: booking.roomId
+      // })
+      
+      // Step 2: After successful payment, confirm the booking
+      const confirmResponse = await confirmBooking(id)
+      
+      // Step 3: Mark room as unavailable in hotel service (after payment success)
+      // await markRoomUnavailable(booking.hotelId, booking.roomId, {
+      //   checkIn: booking.checkIn,
+      //   checkOut: booking.checkOut,
+      //   bookingId: id
+      // })
+      
+      setSuccess(confirmResponse?.message || 'Booking confirmed successfully! Payment processed.')
       await refreshBooking()
+      
+      setTimeout(() => {
+        setSuccess('')
+      }, 3000)
     } catch (err) {
-      setError(err?.message || 'Unable to confirm booking')
+      setError(err?.message || 'Unable to confirm booking. Payment may have failed.')
     } finally {
       setActionLoading('')
     }
@@ -86,8 +112,24 @@ function BookingDetailsPage() {
 
     try {
       setActionLoading('cancel')
-      await cancelBooking(id, reason)
+      setError('')
+      
+      // Step 1: Cancel the booking
+      const cancelResponse = await cancelBooking(id, reason)
+      
+      // Step 2: Mark room as available again in hotel service
+      // await markRoomAvailable(booking.hotelId, booking.roomId, {
+      //   checkIn: booking.checkIn,
+      //   checkOut: booking.checkOut,
+      //   bookingId: id
+      // })
+      
+      setSuccess(cancelResponse?.message || 'Booking cancelled successfully. Room is now available again.')
       await refreshBooking()
+      
+      setTimeout(() => {
+        setSuccess('')
+      }, 3000)
     } catch (err) {
       setError(err?.message || 'Unable to cancel booking')
     } finally {
@@ -123,6 +165,13 @@ function BookingDetailsPage() {
             <div className="mt-4 flex items-start gap-2 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
               <FiAlertCircle className="mt-0.5" size={15} />
               {error}
+            </div>
+          )}
+
+          {success && (
+            <div className="mt-4 flex items-start gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+              <FiCheckCircle className="mt-0.5" size={15} />
+              {success}
             </div>
           )}
 

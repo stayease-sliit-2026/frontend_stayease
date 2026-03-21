@@ -213,116 +213,125 @@ function CreateBookingPage() {
           )}
 
           <form className="mt-5 space-y-4" onSubmit={handleSubmit}>
-            <div className="grid gap-4 md:grid-cols-2">
-              <label className="text-sm">
-                <span className="mb-1 block font-medium text-slate-700">Hotel ID</span>
-                <input
-                  className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none"
-                  style={{ borderColor: BRAND.light }}
-                  value={form.hotelId}
-                  onChange={(event) => setForm((prev) => ({ ...prev, hotelId: event.target.value }))}
-                  placeholder="hotel123"
-                  required
-                />
-              </label>
+            {/* READ-ONLY SECTION: Hotel, Room, Price Info */}
+            <div className="rounded-xl border-2 bg-slate-50 p-4" style={{ borderColor: BRAND.light }}>
+              <p className="mb-3 text-sm font-semibold text-slate-600">Room Information (From Hotel Service)</p>
+              <div className="grid gap-4 md:grid-cols-2">
+                <label className="text-sm">
+                  <span className="mb-1 block font-medium text-slate-700">Hotel ID</span>
+                  <input
+                    className="w-full rounded-lg border bg-slate-100 px-3 py-2 text-sm text-slate-600 cursor-not-allowed focus:outline-none"
+                    style={{ borderColor: BRAND.light }}
+                    value={form.hotelId}
+                    disabled
+                    placeholder="hotel123"
+                  />
+                </label>
 
-              <label className="text-sm">
-                <span className="mb-1 block font-medium text-slate-700">Room ID</span>
-                <input
-                  className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none"
-                  style={{ borderColor: BRAND.light }}
-                  value={form.roomId}
-                  onChange={(event) => setForm((prev) => ({ ...prev, roomId: event.target.value }))}
-                  placeholder="room456"
-                  required
-                />
-              </label>
+                <label className="text-sm">
+                  <span className="mb-1 block font-medium text-slate-700">Room ID</span>
+                  <input
+                    className="w-full rounded-lg border bg-slate-100 px-3 py-2 text-sm text-slate-600 cursor-not-allowed focus:outline-none"
+                    style={{ borderColor: BRAND.light }}
+                    value={form.roomId}
+                    disabled
+                    placeholder="room456"
+                  />
+                </label>
 
-              <label className="text-sm">
-                <span className="mb-1 flex items-center gap-2 font-medium text-slate-700"><FiCalendar size={14} /> Check-in</span>
-                <input
-                  type="datetime-local"
-                  className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none"
-                  style={{ borderColor: BRAND.light }}
-                  value={toDatetimeLocalValue(form.checkIn)}
-                  onChange={(event) => setForm((prev) => ({ ...prev, checkIn: event.target.value }))}
-                  required
-                />
-              </label>
+                <label className="text-sm">
+                  <span className="mb-1 block font-medium text-slate-700">Room Type</span>
+                  <input
+                    className="w-full rounded-lg border bg-slate-100 px-3 py-2 text-sm text-slate-600 cursor-not-allowed focus:outline-none"
+                    style={{ borderColor: BRAND.light }}
+                    value={form.roomType}
+                    disabled
+                    placeholder="Deluxe"
+                  />
+                </label>
 
-              <label className="text-sm">
-                <span className="mb-1 flex items-center gap-2 font-medium text-slate-700"><FiCalendar size={14} /> Check-out</span>
-                <input
-                  type="datetime-local"
-                  className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none"
-                  style={{ borderColor: BRAND.light }}
-                  value={toDatetimeLocalValue(form.checkOut)}
-                  onChange={(event) => setForm((prev) => ({ ...prev, checkOut: event.target.value }))}
-                  required
-                />
-              </label>
-
-              <label className="text-sm">
-                <span className="mb-1 flex items-center gap-2 font-medium text-slate-700"><FiUsers size={14} /> Guests</span>
-                <input
-                  type="number"
-                  min="1"
-                  className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none"
-                  style={{ borderColor: BRAND.light }}
-                  value={form.numberOfGuests}
-                  onChange={(event) => setForm((prev) => ({ ...prev, numberOfGuests: event.target.value }))}
-                  required
-                />
-              </label>
-
-              <label className="text-sm">
-                <span className="mb-1 block font-medium text-slate-700">Room Type (optional)</span>
-                <input
-                  className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none"
-                  style={{ borderColor: BRAND.light }}
-                  value={form.roomType}
-                  onChange={(event) => setForm((prev) => ({ ...prev, roomType: event.target.value }))}
-                  placeholder="Deluxe"
-                />
-              </label>
-
-              <label className="text-sm">
-                <span className="mb-1 block font-medium text-slate-700">Price per night</span>
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none"
-                  style={{ borderColor: BRAND.light }}
-                  value={form.pricePerNight}
-                  onChange={(event) => setForm((prev) => ({ ...prev, pricePerNight: event.target.value }))}
-                  placeholder="100"
-                />
-              </label>
-
-              <label className="text-sm">
-                <span className="mb-1 block font-medium text-slate-700">Total Price</span>
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none"
-                  style={{ borderColor: BRAND.light }}
-                  value={form.totalPrice}
-                  onChange={(event) => setForm((prev) => ({ ...prev, totalPrice: event.target.value }))}
-                  placeholder="500"
-                  required
-                />
-                <p className="mt-1 text-xs text-slate-500">
-                  Nights: {nights} {nights === 1 ? 'night' : 'nights'}
-                </p>
-              </label>
+                <label className="text-sm">
+                  <span className="mb-1 block font-medium text-slate-700">Price per Night</span>
+                  <input
+                    type="number"
+                    className="w-full rounded-lg border bg-slate-100 px-3 py-2 text-sm text-slate-600 cursor-not-allowed focus:outline-none"
+                    style={{ borderColor: BRAND.light }}
+                    value={form.pricePerNight}
+                    disabled
+                    placeholder="100"
+                  />
+                </label>
+              </div>
             </div>
 
+            {/* EDITABLE SECTION: Booking Details */}
+            <div className="rounded-xl border-2 bg-white p-4" style={{ borderColor: BRAND.medium }}>
+              <p className="mb-3 text-sm font-semibold text-slate-600">Your Stay Details (Edit Below)</p>
+              <div className="grid gap-4 md:grid-cols-2">
+                <label className="text-sm">
+                  <span className="mb-1 flex items-center gap-2 font-medium text-slate-700"><FiCalendar size={14} /> Check-in</span>
+                  <input
+                    type="datetime-local"
+                    className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none"
+                    style={{ borderColor: BRAND.light }}
+                    value={toDatetimeLocalValue(form.checkIn)}
+                    onChange={(event) => setForm((prev) => ({ ...prev, checkIn: event.target.value }))}
+                    required
+                  />
+                </label>
+
+                <label className="text-sm">
+                  <span className="mb-1 flex items-center gap-2 font-medium text-slate-700"><FiCalendar size={14} /> Check-out</span>
+                  <input
+                    type="datetime-local"
+                    className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none"
+                    style={{ borderColor: BRAND.light }}
+                    value={toDatetimeLocalValue(form.checkOut)}
+                    onChange={(event) => setForm((prev) => ({ ...prev, checkOut: event.target.value }))}
+                    required
+                  />
+                </label>
+
+                <label className="text-sm">
+                  <span className="mb-1 flex items-center gap-2 font-medium text-slate-700"><FiUsers size={14} /> Number of Adults</span>
+                  <input
+                    type="number"
+                    min="1"
+                    max="10"
+                    className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none"
+                    style={{ borderColor: BRAND.light }}
+                    value={form.numberOfGuests}
+                    onChange={(event) => setForm((prev) => ({ ...prev, numberOfGuests: event.target.value }))}
+                    required
+                  />
+                </label>
+
+                <label className="text-sm">
+                  <span className="mb-1 block font-medium text-slate-700">Total Price</span>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      className="flex-1 rounded-lg border bg-slate-100 px-3 py-2 text-sm text-slate-600 cursor-not-allowed focus:outline-none"
+                      style={{ borderColor: BRAND.light }}
+                      value={form.totalPrice}
+                      disabled
+                      placeholder="500"
+                    />
+                  </div>
+                  <p className="mt-1 text-xs text-slate-500">
+                    {nights > 0 ? `${nights} ${nights === 1 ? 'night' : 'nights'} × $${Number(form.pricePerNight || 0).toFixed(2)} = $${form.totalPrice}` : 'Select dates to calculate'}
+                  </p>
+                </label>
+              </div>
+            </div>
+
+            {/* OPTIONAL REQUESTS */}
             <label className="block text-sm">
               <span className="mb-1 block font-medium text-slate-700">Special Requests (optional)</span>
               <textarea
-                className="min-h-24 w-full rounded-lg border px-3 py-2 text-sm focus:outline-none"
+                className="min-h-20 w-full rounded-lg border px-3 py-2 text-sm focus:outline-none"
                 style={{ borderColor: BRAND.light }}
                 value={form.specialRequests}
                 onChange={(event) => setForm((prev) => ({ ...prev, specialRequests: event.target.value }))}
@@ -330,12 +339,13 @@ function CreateBookingPage() {
               />
             </label>
 
-            <div className="flex flex-wrap items-center gap-3">
+            {/* ACTION BUTTONS */}
+            <div className="flex flex-wrap items-center gap-3 pt-2">
               <button
                 type="button"
                 onClick={handleCheckAvailability}
-                disabled={checkingAvailability}
-                className="inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-semibold text-white disabled:opacity-70"
+                disabled={checkingAvailability || !form.hotelId || !form.roomId || !form.checkIn || !form.checkOut}
+                className="inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-semibold text-white disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{ backgroundColor: BRAND.medium }}
               >
                 {checkingAvailability ? <FiLoader className="animate-spin" size={14} /> : null}
@@ -344,8 +354,8 @@ function CreateBookingPage() {
 
               <button
                 type="submit"
-                disabled={submitting || !isAuthed}
-                className="inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-semibold text-white disabled:opacity-70"
+                disabled={submitting || !isAuthed || !form.hotelId || !form.roomId || nights <= 0}
+                className="inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-semibold text-white disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{ backgroundColor: BRAND.dark }}
               >
                 {submitting ? <FiLoader className="animate-spin" size={14} /> : null}
@@ -358,8 +368,8 @@ function CreateBookingPage() {
                 className={`rounded-xl border px-3 py-2 text-sm ${availability.available ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-rose-200 bg-rose-50 text-rose-700'}`}
               >
                 {availability.available
-                  ? `Room is available. Price per night: $${availability.pricePerNight}`
-                  : 'Room is not available for selected dates.'}
+                  ? `✓ Room is available. Price per night: $${availability.pricePerNight}`
+                  : '✗ Room is not available for selected dates.'}
               </div>
             )}
           </form>

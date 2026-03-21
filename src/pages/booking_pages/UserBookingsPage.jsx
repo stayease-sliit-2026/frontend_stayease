@@ -88,10 +88,10 @@ function UserBookingsPage() {
   async function handleConfirm(bookingId) {
     try {
       setActionLoadingId(bookingId)
-      await confirmBooking(bookingId)
+      // Redirect to details page where payment service integration happens
       navigate(bookingPaths.details(bookingId))
     } catch (err) {
-      setError(err?.message || 'Unable to confirm booking')
+      setError(err?.message || 'Unable to navigate to booking')
     } finally {
       setActionLoadingId('')
     }
@@ -102,7 +102,14 @@ function UserBookingsPage() {
 
     try {
       setActionLoadingId(bookingId)
+      
+      // Step 1: Cancel the booking
       await cancelBooking(bookingId, reason)
+      
+      // Step 2: Mark room as available again in hotel service
+      // await markRoomAvailable(hotelId, roomId, { checkIn, checkOut, bookingId })
+      
+      // Refresh the booking list
       const response = await getUserBookings({
         status: status || undefined,
         hotelId: hotelId || undefined,
