@@ -21,7 +21,7 @@ export default function AdminLogin() {
       const result = await handleAdminLogin(email, password);
       setLoading(false);
       console.log(result);
-      if (result && result.token) {
+      if (result == 200) {
         navigate('/admin/dashboard', { replace: true });
       } else {
         setError('Invalid credentials or server error.');

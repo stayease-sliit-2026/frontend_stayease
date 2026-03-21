@@ -19,8 +19,9 @@ function Login() {
             return;
         }
         const result = await loginRequest(email, password);
-        if (result) {
-            login(email); // Optionally pass result if your login expects it
+        
+        if (result.status==200){
+            console.log('Login successful',result);
             navigate('/', { replace: true });
         }
         // error is handled by the hook

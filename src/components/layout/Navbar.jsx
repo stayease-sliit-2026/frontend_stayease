@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
+import useLogin  from '../../hooks/useLogin';
 
 const navLinks = [
 	{ to: '/', label: 'Home' },
@@ -10,6 +11,13 @@ const navLinks = [
 
 export default function Navbar() {
 	const { user, logout } = useAuth();
+
+	// Remove session tokens on logout
+	const handleLogout = () => {
+		sessionStorage.removeItem('authToken');
+		sessionStorage.removeItem('adminAuthToken');
+		logout();
+	};
 	const location = useLocation();
 	const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
 	const [menuOpen, setMenuOpen] = useState(false);
@@ -96,7 +104,7 @@ export default function Navbar() {
 								</Link>
 								<button
 									type="button"
-									onClick={logout}
+									onClick={handleLogout}
 									style={{
 										border: '1px solid #4fd1c5',
 										borderRadius: '8px',
@@ -107,9 +115,9 @@ export default function Navbar() {
 										fontWeight: 600,
 										marginLeft: 12,
 									}}
-								>
-									Logout
-								</button>
+									>
+										Logout
+									</button>
 							</>
 						)}
 					</nav>
@@ -156,7 +164,7 @@ export default function Navbar() {
 									</Link>
 									<button
 										type="button"
-										onClick={() => { logout(); setMenuOpen(false); }}
+										onClick={() => { handleLogout(); setMenuOpen(false); }}
 										style={{
 											border: '1px solid #4fd1c5',
 											borderRadius: '8px',
@@ -167,9 +175,9 @@ export default function Navbar() {
 											fontWeight: 600,
 											marginTop: 12,
 										}}
-									>
-										Logout
-									</button>
+										>
+											Logout
+										</button>
 								</>
 							)}
 						</nav>

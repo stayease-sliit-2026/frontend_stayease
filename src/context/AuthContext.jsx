@@ -8,14 +8,16 @@ export function AuthProvider({ children }) {
 		return saved ? JSON.parse(saved) : null;
 	});
 
-	const login = (email) => {
+	const login = (email, token) => {
 		const nextUser = { email };
 		localStorage.setItem('stayease_user', JSON.stringify(nextUser));
+		sessionStorage.setItem('authToken', token); // ✅ sync token
 		setUser(nextUser);
 	};
 
 	const logout = () => {
 		localStorage.removeItem('stayease_user');
+		sessionStorage.removeItem('authToken'); // ✅ cleanup
 		setUser(null);
 	};
 
