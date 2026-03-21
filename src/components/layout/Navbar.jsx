@@ -4,6 +4,8 @@ import useAuth from '../../hooks/useAuth';
 
 const navLinks = [
 	{ to: '/', label: 'Home' },
+	{ to: '/hotel-service', label: 'Explore Hotels' },
+	// { to: '/hotel-admin', label: 'Admin Dashboard' },
 	{ to: '/register', label: 'Register' },
 	{ to: '/login', label: 'Login' },
 ];
