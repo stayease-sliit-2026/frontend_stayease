@@ -160,9 +160,12 @@ export default function AdminLogin() {
               </button>
 
             </form>
-            <div style={{ marginTop: 18, textAlign: 'center', fontSize: '1.01rem' }}>
-              <Link to="/login" style={{ color: '#bcbcbd', fontWeight: 300, textDecoration: 'underline' }}>
+            <div style={{ marginTop: 18, textAlign: 'center', fontSize: '0.88rem' }}>
+              <Link to="/login" style={{ color: '#bcbcbd', fontWeight: 300, textDecoration: 'underline', marginRight: 16 }}>
                 User Login
+              </Link>
+              <Link to="/admin/register" style={{ color: '#2563eb', fontWeight: 600, textDecoration: 'underline' }}>
+                Register Admin
               </Link>
             </div>
 

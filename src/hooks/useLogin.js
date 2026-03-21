@@ -31,7 +31,7 @@ export default function useLogin() {
       const response = await api.post(AppUrl.APP_URL_MAIN + AppUrl.LOGIN_URL, { email, password });
       setLoading(false);  
       if (response.data && response.data.token) {
-        sessionStorage.setItem('adminAuthToken', response.data.token);
+        sessionStorage.setItem('authToken', response.data.token);
       }
       console.log('Admin login successful:', response.data);
       return response.data;

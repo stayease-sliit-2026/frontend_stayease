@@ -274,11 +274,11 @@ body { font-family: 'DM Sans', sans-serif; }
 
 .field-input {
   width: 100%;
-  padding: 13px 14px 13px 40px;
+  padding: 10px 14px 13px 40px;
   border: 1.5px solid #e2e8f4;
   border-radius: 10px;
   font-family: 'DM Sans', sans-serif;
-  font-size: 0.92rem;
+  font-size: 0.70rem;
   color: #0b1120;
   background: #fff;
   outline: none;
