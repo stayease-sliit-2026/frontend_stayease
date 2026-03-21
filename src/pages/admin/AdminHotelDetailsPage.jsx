@@ -13,21 +13,22 @@ import {
 } from 'react-icons/fi'
 import { MdHotel } from 'react-icons/md'
 import { TbCurrencyDollar } from 'react-icons/tb'
-import {
-  addRoomToHotel,
-  deleteRoom,
-  getHotelById,
-  listHotelRooms,
-  updateHotel,
-  updateRoom,
-} from '../../services/hotelApi'
 import HotelForm from '../../components/hotel_components/HotelForm'
 import RoomForm from '../../components/hotel_components/RoomForm'
+import useHotelService from '../../hooks/useHotelService'
 import { hotelServicePaths } from '../../utils/hotelPaths'
 
 function AdminHotelDetailsPage() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const {
+    addRoomToHotel,
+    deleteRoom,
+    getHotelById,
+    listHotelRooms,
+    updateHotel,
+    updateRoom,
+  } = useHotelService()
 
   const [hotel, setHotel] = useState(null)
   const [rooms, setRooms] = useState([])

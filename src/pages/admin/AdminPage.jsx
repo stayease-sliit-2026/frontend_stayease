@@ -3,10 +3,11 @@ import { Link } from 'react-router-dom'
 import { FiEdit2, FiLayers, FiMapPin, FiPlus, FiSearch, FiStar, FiTrash2, FiX } from 'react-icons/fi'
 import { MdHotel } from 'react-icons/md'
 import HotelForm from '../../components/hotel_components/HotelForm'
-import { createHotel, deleteHotel, listHotels } from '../../services/hotelApi'
+import useHotelService from '../../hooks/useHotelService'
 import { hotelServicePaths } from '../../utils/hotelPaths'
 
 function AdminPage() {
+  const { createHotel, deleteHotel, listHotels } = useHotelService()
   const [hotels, setHotels] = useState([])
   const [loading, setLoading] = useState(true)
   const [showCreateForm, setShowCreateForm] = useState(false)
