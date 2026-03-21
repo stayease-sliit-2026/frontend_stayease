@@ -135,6 +135,11 @@ function Login() {
                             Don't have an account?{' '}
                             <Link to="/register" style={{ color: '#fff', fontWeight: 700, textDecoration: 'underline' }}>Create your account</Link>
                         </div>
+                        <div style={{ marginTop: 10, textAlign: 'center', fontSize: '1.01rem' }}>
+                            <Link to="/admin/login" style={{ color: '#cccccc', fontWeight: 400, textDecoration: 'underline' ,fontSize: '0.88rem'}}>
+                                Admin Login
+                            </Link>
+                        </div>
                     </form>
                 </div>
             </div>

@@ -24,5 +24,24 @@ export default function useLogin() {
     }
   };
 
-  return { loginRequest, loading, error, setError };
+  const handleAdminLogin = async (email, password) => {
+    setLoading(true);
+    setError('');
+    try {
+      const response = await api.post(AppUrl.APP_URL_MAIN + AppUrl.LOGIN_URL, { email, password });
+      setLoading(false);  
+      if (response.data && response.data.token) {
+        sessionStorage.setItem('adminAuthToken', response.data.token);
+      }
+      console.log('Admin login successful:', response.data);
+      return response.data;
+    } catch (err) {
+      console.error('Admin login error:', err);
+      setError(err.response?.data?.message || 'Admin login failed. Please try again.');
+      setLoading(false);
+      return null;
+    }
+  };
+
+  return { loginRequest, handleAdminLogin, loading, error, setError };
 }

@@ -94,7 +94,21 @@ export default function Home() {
             transition: 'background 0.2s, color 0.2s',
             display: 'inline-block',
             marginTop: 8,
+            marginRight: 16,
           }}>Get Started</a>
+          <a href="/profile" style={{
+            background: 'linear-gradient(90deg, #2563eb 0%, #4fd1c5 100%)',
+            color: '#fff',
+            fontWeight: 700,
+            borderRadius: '10px',
+            padding: '18px 44px',
+            fontSize: '1.2rem',
+            textDecoration: 'none',
+            boxShadow: '0 4px 24px rgba(10,35,66,0.12)',
+            transition: 'background 0.2s, color 0.2s',
+            display: 'inline-block',
+            marginTop: 8,
+          }}>My Profile</a>
         </div>
         <div style={{
           flex: '1 1 420px',

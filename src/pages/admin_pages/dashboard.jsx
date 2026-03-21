@@ -1,0 +1,734 @@
+import React, { useEffect, useState } from 'react';
+
+const styles = `
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #f4f6fb;
+  }
+
+  .dashboard-root {
+    min-height: 100vh;
+    display: flex;
+    background: #f4f6fb;
+  }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    width: 240px;
+    min-height: 100vh;
+    background: #0b1120;
+    display: flex;
+    flex-direction: column;
+    padding: 36px 0 24px;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 100;
+  }
+
+  .sidebar-logo {
+    padding: 0 28px 36px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo-icon {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+
+  .logo-text {
+    font-family: '', sans-serif;
+    font-weight: 800;
+    font-size: 1.15rem;
+    color: #fff;
+    letter-spacing: -0.02em;
+  }
+
+  .sidebar-section-label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #3b4a66;
+    padding: 0 28px;
+    margin-bottom: 8px;
+  }
+
+  .sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 0 14px;
+    margin-bottom: 28px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.18s, color 0.18s;
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: #7a8db0;
+    border: none;
+    background: transparent;
+    width: 100%;
+    text-align: left;
+    text-decoration: none;
+  }
+
+  .nav-item:hover {
+    background: rgba(59,130,246,0.08);
+    color: #c7d5f0;
+  }
+
+  .nav-item.active {
+    background: rgba(59,130,246,0.14);
+    color: #60a5fa;
+    font-weight: 600;
+  }
+
+  .nav-item .nav-icon {
+    width: 18px;
+    text-align: center;
+    font-size: 1rem;
+    opacity: 0.85;
+  }
+
+  .sidebar-bottom {
+    margin-top: auto;
+    padding: 0 14px;
+  }
+
+  .admin-card {
+    background: #141d2e;
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .admin-avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #fff;
+    flex-shrink: 0;
+  }
+
+  .admin-info { overflow: hidden; }
+
+  .admin-name {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #e2e8f4;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .admin-role {
+    font-size: 0.71rem;
+    color: #4b6080;
+    margin-top: 1px;
+    text-transform: capitalize;
+  }
+
+  /* ── Main ── */
+  .main-content {
+    margin-left: 240px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  .topbar {
+    height: 68px;
+    background: #fff;
+    border-bottom: 1px solid #e8edf5;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 36px;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+
+  .topbar-title {
+    font-family: '', sans-serif;
+    font-weight: 800;
+    font-size: 1.2rem;
+    color: #0b1120;
+    letter-spacing: -0.02em;
+  }
+
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .topbar-badge {
+    position: relative;
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    background: #f0f4ff;
+    border: none;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem;
+    color: #3b82f6;
+    transition: background 0.15s;
+  }
+
+  .topbar-badge:hover { background: #dbeafe; }
+
+  .badge-dot {
+    position: absolute;
+    top: 7px; right: 7px;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #ef4444;
+    border: 1.5px solid #fff;
+  }
+
+  .topbar-avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 700;
+    font-size: 0.88rem;
+    color: #fff;
+    cursor: pointer;
+  }
+
+  .page-body {
+    padding: 36px;
+    flex: 1;
+  }
+
+  /* ── Welcome Banner ── */
+  .welcome-banner {
+    background: linear-gradient(110deg, #0b1120 60%, #1a2d52 100%);
+    border-radius: 18px;
+    padding: 32px 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 32px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .welcome-banner::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 220px; height: 220px;
+    border-radius: 50%;
+    background: rgba(59,130,246,0.12);
+    pointer-events: none;
+  }
+
+  .welcome-banner::after {
+    content: '';
+    position: absolute;
+    bottom: -60px; right: 80px;
+    width: 160px; height: 160px;
+    border-radius: 50%;
+    background: rgba(6,182,212,0.07);
+    pointer-events: none;
+  }
+
+  .welcome-text h2 {
+    font-family: '', sans-serif;
+    font-weight: 800;
+    font-size: 1.55rem;
+    color: #fff;
+    letter-spacing: -0.02em;
+    margin-bottom: 6px;
+  }
+
+  .welcome-text p {
+    font-size: 0.9rem;
+    color: #7a9ac7;
+    font-weight: 400;
+  }
+
+  .welcome-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+  }
+
+  .meta-pill {
+    background: rgba(59,130,246,0.18);
+    color: #93c5fd;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 20px;
+    padding: 4px 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .meta-id {
+    font-size: 0.78rem;
+    color: #3b5070;
+  }
+
+  /* ── Stats Grid ── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-bottom: 32px;
+  }
+
+  .stat-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 22px 24px;
+    border: 1px solid #e8edf5;
+    transition: box-shadow 0.2s, transform 0.2s;
+    cursor: default;
+  }
+
+  .stat-card:hover {
+    box-shadow: 0 8px 32px rgba(37,99,235,0.09);
+    transform: translateY(-2px);
+  }
+
+  .stat-icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+    margin-bottom: 14px;
+  }
+
+  .stat-value {
+    font-family: '', sans-serif;
+    font-weight: 800;
+    font-size: 1.75rem;
+    color: #0b1120;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .stat-label {
+    font-size: 0.8rem;
+    color: #8a9bbf;
+    font-weight: 400;
+    margin-bottom: 10px;
+  }
+
+  .stat-change {
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .stat-change.up { color: #22c55e; }
+  .stat-change.down { color: #ef4444; }
+
+  /* ── Quick Actions ── */
+  .section-title {
+    font-family: '', sans-serif;
+    font-weight: 800;
+    font-size: 1.05rem;
+    color: #0b1120;
+    letter-spacing: -0.01em;
+    margin-bottom: 16px;
+  }
+
+  .actions-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .action-card {
+    background: #fff;
+    border: 1px solid #e8edf5;
+    border-radius: 14px;
+    padding: 22px 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    text-align: left;
+  }
+
+  .action-card:hover {
+    border-color: #3b82f6;
+    box-shadow: 0 6px 24px rgba(37,99,235,0.10);
+    transform: translateY(-2px);
+  }
+
+  .action-icon {
+    width: 42px; height: 42px;
+    border-radius: 11px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.15rem;
+    flex-shrink: 0;
+  }
+
+  .action-label {
+    font-family: '', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #0b1120;
+  }
+
+  .action-desc {
+    font-size: 0.76rem;
+    color: #8a9bbf;
+    line-height: 1.4;
+  }
+
+  /* ── Bottom Row ── */
+  .bottom-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  .panel {
+    background: #fff;
+    border: 1px solid #e8edf5;
+    border-radius: 14px;
+    padding: 24px;
+  }
+
+  .panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+  }
+
+  .panel-action {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #3b82f6;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    transition: color 0.15s;
+  }
+
+  .panel-action:hover { color: #2563eb; }
+
+  .activity-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f4fb;
+  }
+
+  .activity-item:last-child { border-bottom: none; }
+
+  .activity-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .activity-text {
+    font-size: 0.82rem;
+    color: #475569;
+    flex: 1;
+  }
+
+  .activity-time {
+    font-size: 0.74rem;
+    color: #b0bdd4;
+    white-space: nowrap;
+  }
+
+  .status-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f4fb;
+  }
+
+  .status-row:last-child { border-bottom: none; }
+
+  .status-name {
+    font-size: 0.82rem;
+    color: #475569;
+    font-weight: 500;
+  }
+
+  .status-pill {
+    font-size: 0.7rem;
+    font-weight: 600;
+    border-radius: 20px;
+    padding: 3px 10px;
+    letter-spacing: 0.03em;
+  }
+
+  .status-pill.green { background: #dcfce7; color: #16a34a; }
+  .status-pill.yellow { background: #fef9c3; color: #a16207; }
+  .status-pill.blue { background: #dbeafe; color: #2563eb; }
+
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .animate-in {
+    animation: fadeInUp 0.45s cubic-bezier(0.22,1,0.36,1) both;
+  }
+
+  .delay-1 { animation-delay: 0.05s; }
+  .delay-2 { animation-delay: 0.10s; }
+  .delay-3 { animation-delay: 0.15s; }
+  .delay-4 { animation-delay: 0.20s; }
+  .delay-5 { animation-delay: 0.25s; }
+  .delay-6 { animation-delay: 0.30s; }
+`;
+
+const STATS = [
+  { icon: '👥', label: 'Total Users', value: '8,240', change: '+12%', dir: 'up', bg: '#eff6ff', iconBg: '#dbeafe', iconColor: '#2563eb' },
+  { icon: '🏨', label: 'Active Hotels', value: '142', change: '+4%', dir: 'up', bg: '#f0fdf4', iconBg: '#dcfce7', iconColor: '#16a34a' },
+  { icon: '📋', label: 'Bookings Today', value: '391', change: '-2%', dir: 'down', bg: '#fff7ed', iconBg: '#ffedd5', iconColor: '#ea580c' },
+  { icon: '💰', label: 'Revenue (Mo.)', value: '$94.2k', change: '+18%', dir: 'up', bg: '#fdf4ff', iconBg: '#f3e8ff', iconColor: '#9333ea' },
+];
+
+const ACTIONS = [
+  { icon: '👥', label: 'View All Users', desc: 'Browse & manage accounts', bg: '#eff6ff', iconBg: '#dbeafe', iconColor: '#2563eb' },
+  { icon: '📋', label: 'Manage Bookings', desc: 'Review active reservations', bg: '#f0fdf4', iconBg: '#dcfce7', iconColor: '#16a34a' },
+  { icon: '🏨', label: 'Add New Hotel', desc: 'List a new property', bg: '#fff7ed', iconBg: '#ffedd5', iconColor: '#ea580c' },
+  { icon: '📊', label: 'View Reports', desc: 'Analytics & insights', bg: '#fdf4ff', iconBg: '#f3e8ff', iconColor: '#9333ea' },
+];
+
+const ACTIVITY = [
+  { text: 'New user registered — priya@example.com', time: '2m ago', color: '#3b82f6' },
+  { text: 'Booking #8821 confirmed at The Lakeview', time: '11m ago', color: '#22c55e' },
+  { text: 'Hotel "Skyline Suites" marked for review', time: '34m ago', color: '#f59e0b' },
+  { text: 'Report export completed (Q2 2025)', time: '1h ago', color: '#8b5cf6' },
+  { text: 'Admin password updated successfully', time: '3h ago', color: '#64748b' },
+];
+
+const SYSTEMS = [
+  { name: 'Booking Engine', status: 'Operational', cls: 'green' },
+  { name: 'Payment Gateway', status: 'Operational', cls: 'green' },
+  { name: 'Email Service', status: 'Degraded', cls: 'yellow' },
+  { name: 'Search Index', status: 'Syncing', cls: 'blue' },
+];
+
+export default function AdminDashboard() {
+  const [admin, setAdmin] = useState(null);
+
+  useEffect(() => {
+    const token = sessionStorage.getItem('authToken');
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        setAdmin(payload);
+      } catch (e) {
+        setAdmin({ email: 'admin@hotelco.com', id: 'ADM-001', role: 'superadmin' });
+      }
+    } else {
+      // Demo fallback
+      setAdmin({ email: 'admin@hotelco.com', id: 'ADM-001', role: 'superadmin' });
+    }
+  }, []);
+
+  const initials = admin?.email ? admin.email[0].toUpperCase() : 'A';
+  const displayName = admin?.email?.split('@')[0] || 'Admin';
+
+  return (
+    <>
+      <style>{styles}</style>
+      <div className="dashboard-root">
+
+        {/* Sidebar */}
+        <aside className="sidebar">
+          <div className="sidebar-logo">
+            <div className="logo-icon">🏨</div>
+            <span className="logo-text">HotelAdmin</span>
+          </div>
+
+          <div className="sidebar-section-label">Main</div>
+          <nav className="sidebar-nav">
+            {[
+              { icon: '⊞', label: 'Dashboard', active: true },
+              { icon: '👥', label: 'Users' },
+              { icon: '🏨', label: 'Hotels' },
+              { icon: '📋', label: 'Bookings' },
+            ].map(item => (
+              <button key={item.label} className={`nav-item${item.active ? ' active' : ''}`}>
+                <span className="nav-icon">{item.icon}</span>
+                {item.label}
+              </button>
+            ))}
+          </nav>
+
+          <div className="sidebar-section-label">Analytics</div>
+          <nav className="sidebar-nav">
+            {[
+              { icon: '📊', label: 'Reports' },
+              { icon: '💰', label: 'Revenue' },
+              { icon: '🔔', label: 'Notifications' },
+            ].map(item => (
+              <button key={item.label} className="nav-item">
+                <span className="nav-icon">{item.icon}</span>
+                {item.label}
+              </button>
+            ))}
+          </nav>
+
+          <div className="sidebar-section-label">System</div>
+          <nav className="sidebar-nav">
+            {[
+              { icon: '⚙️', label: 'Settings' },
+              { icon: '🔒', label: 'Security' },
+            ].map(item => (
+              <button key={item.label} className="nav-item">
+                <span className="nav-icon">{item.icon}</span>
+                {item.label}
+              </button>
+            ))}
+          </nav>
+
+          <div className="sidebar-bottom">
+            {admin && (
+              <div className="admin-card">
+                <div className="admin-avatar">{initials}</div>
+                <div className="admin-info">
+                  <div className="admin-name">{displayName}</div>
+                  <div className="admin-role">{admin.role || 'admin'}</div>
+                </div>
+              </div>
+            )}
+          </div>
+        </aside>
+
+        {/* Main */}
+        <main className="main-content">
+          <header className="topbar">
+            <span className="topbar-title">Dashboard</span>
+            <div className="topbar-right">
+              <button className="topbar-badge">
+                🔔
+                <span className="badge-dot" />
+              </button>
+              <button className="topbar-badge">⚙️</button>
+              <div className="topbar-avatar">{initials}</div>
+            </div>
+          </header>
+
+          <div className="page-body">
+
+            {/* Welcome Banner */}
+            <div className="welcome-banner animate-in">
+              <div className="welcome-text">
+                <h2>Welcome back, {displayName} </h2>
+                <p>Here's what's happening across your platform today.</p>
+              </div>
+              {admin && (
+                <div className="welcome-meta">
+                  <span className="meta-pill">{admin.role || 'admin'}</span>
+                  <span className="meta-id">ID: {admin.id || 'N/A'}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Stats */}
+            <div className="stats-grid">
+              {STATS.map((s, i) => (
+                <div key={s.label} className={`stat-card animate-in delay-${i + 1}`}>
+                  <div className="stat-icon" style={{ background: s.iconBg, color: s.iconColor }}>{s.icon}</div>
+                  <div className="stat-value">{s.value}</div>
+                  <div className="stat-label">{s.label}</div>
+                  <div className={`stat-change ${s.dir}`}>
+                    {s.dir === 'up' ? '↑' : '↓'} {s.change} this month
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Quick Actions */}
+            <div className="section-title animate-in delay-5">Quick Actions</div>
+            <div className="actions-grid">
+              {ACTIONS.map((a, i) => (
+                <button key={a.label} className={`action-card animate-in delay-${i + 1}`}>
+                  <div className="action-icon" style={{ background: a.iconBg, color: a.iconColor }}>{a.icon}</div>
+                  <div>
+                    <div className="action-label">{a.label}</div>
+                    <div className="action-desc">{a.desc}</div>
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            {/* Bottom panels */}
+            <div className="bottom-grid">
+              <div className="panel animate-in delay-3">
+                <div className="panel-header">
+                  <div className="section-title" style={{ margin: 0 }}>Recent Activity</div>
+                  <button className="panel-action">View all</button>
+                </div>
+                {ACTIVITY.map((a, i) => (
+                  <div key={i} className="activity-item">
+                    <div className="activity-dot" style={{ background: a.color }} />
+                    <div className="activity-text">{a.text}</div>
+                    <div className="activity-time">{a.time}</div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="panel animate-in delay-4">
+                <div className="panel-header">
+                  <div className="section-title" style={{ margin: 0 }}>System Status</div>
+                  <button className="panel-action">Details</button>
+                </div>
+                {SYSTEMS.map((s, i) => (
+                  <div key={i} className="status-row">
+                    <span className="status-name">{s.name}</span>
+                    <span className={`status-pill ${s.cls}`}>{s.status}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+          </div>
+        </main>
+      </div>
+    </>
+  );
+}
