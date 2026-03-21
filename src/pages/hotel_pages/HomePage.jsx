@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import { FiMapPin, FiSearch, FiSliders, FiStar, FiX } from 'react-icons/fi'
 import HotelCard from '../../components/hotel_components/HotelCard'
-import { listHotels } from '../../services/hotelApi'
+import useHotelService from '../../hooks/useHotelService'
 
 function HomePage() {
+  const { listHotels } = useHotelService()
   const [hotels, setHotels] = useState([])
   const [query, setQuery] = useState('')
   const [location, setLocation] = useState('')

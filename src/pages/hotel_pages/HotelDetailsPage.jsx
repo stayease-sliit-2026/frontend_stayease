@@ -2,11 +2,12 @@ import { useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { FiCheckCircle, FiEye, FiMapPin, FiSearch, FiStar, FiUsers, FiX } from 'react-icons/fi'
 import { TbCurrencyDollar } from 'react-icons/tb'
-import { getHotelById, listHotelRooms } from '../../services/hotelApi'
 import BackButton from '../../components/hotel_components/BackButton'
+import useHotelService from '../../hooks/useHotelService'
 
 function HotelDetailsPage() {
   const { id } = useParams()
+  const { getHotelById, listHotelRooms } = useHotelService()
   const [hotel, setHotel] = useState(null)
   const [rooms, setRooms] = useState([])
   const [selectedGalleryImage, setSelectedGalleryImage] = useState('')
