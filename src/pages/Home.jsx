@@ -13,7 +13,26 @@ const partnerLogos = [
 
 export default function Home() {
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(120deg, #0a2342 60%, #1e3a5c 100%)', color: '#fff', fontFamily: 'Segoe UI, Arial, sans-serif' }}>
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(120deg, #0a2342 60%, #1e3a5c 100%)',
+      color: '#fff',
+      fontFamily: 'Segoe UI, Arial, sans-serif',
+      position: 'relative',
+      overflow: 'hidden',
+    }}>
+      {/* Decorative Gradient Overlay */}
+      <div style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        zIndex: 0,
+        pointerEvents: 'none',
+        background: 'radial-gradient(ellipse at 70% 10%, #4fd1c5 0%, transparent 60%)',
+        opacity: 0.18,
+      }} />
       <Navbar />
       {/* Hero Section */}
       <section
@@ -26,6 +45,8 @@ export default function Home() {
           gap: 64,
           maxWidth: 1400,
           margin: '0 auto',
+          position: 'relative',
+          zIndex: 1,
         }}
       >
         <div
@@ -36,10 +57,10 @@ export default function Home() {
             marginBottom: 32,
           }}
         >
-          <h1 style={{ fontSize: '3.5rem', fontWeight: 900, marginBottom: 18, letterSpacing: '-2px', lineHeight: 1.08 }}>
+          <h1 style={{ fontSize: '3.5rem', fontWeight: 900, marginBottom: 18, letterSpacing: '-2px', lineHeight: 1.08, textShadow: '0 2px 16px rgba(10,35,66,0.18)' }}>
             Book Your Dream Stay<br />with <span style={{ color: '#4fd1c5' }}>StayEase</span>
           </h1>
-          <p style={{ fontSize: '1.35rem', marginBottom: 32, color: '#e0e7ef', maxWidth: 520 }}>
+          <p style={{ fontSize: '1.35rem', marginBottom: 32, color: '#e0e7ef', maxWidth: 520, textShadow: '0 1px 8px rgba(10,35,66,0.10)' }}>
             Discover the best hotels, resorts, and apartments worldwide. Enjoy exclusive deals, stunning rooms, and world-class service—all in one place.
           </p>
           {/* Booking Search Mockup */}
@@ -56,11 +77,14 @@ export default function Home() {
           }}>
             <input placeholder="Where to?" style={{ flex: 1, border: 'none', outline: 'none', fontSize: '1.1rem', padding: '10px', borderRadius: 8 }} />
             <input type="date" style={{ border: 'none', outline: 'none', fontSize: '1.1rem', padding: '10px', borderRadius: 8 }} />
-            <button style={{ background: '#0a2342', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 18px', fontWeight: 700, cursor: 'pointer' }}>Search</button>
+            <button style={{ background: '#0a2342', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 18px', fontWeight: 700, cursor: 'pointer', transition: 'background 0.2s' }}
+              onMouseOver={e => e.currentTarget.style.background = '#2563eb'}
+              onMouseOut={e => e.currentTarget.style.background = '#0a2342'}
+            >Search</button>
           </div>
           <a href="/register" style={{
-            background: '#4fd1c5',
-            color: '#0a2342',
+            background: 'linear-gradient(90deg, #4fd1c5 0%, #2563eb 100%)',
+            color: '#fff',
             fontWeight: 700,
             borderRadius: '10px',
             padding: '18px 44px',
@@ -69,22 +93,82 @@ export default function Home() {
             boxShadow: '0 4px 24px rgba(10,35,66,0.12)',
             transition: 'background 0.2s, color 0.2s',
             display: 'inline-block',
+            marginTop: 8,
           }}>Get Started</a>
         </div>
-        <img
-          src={heroImg}
-          alt="Hotel lobby"
-          style={{
-            flex: '1 1 420px',
-            minWidth: 220,
-            maxWidth: 540,
-            width: '100%',
-            borderRadius: '28px',
+        <div style={{
+          flex: '1 1 420px',
+          minWidth: 220,
+          maxWidth: 540,
+          width: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
+          <div style={{
+            background: '#fff',
+            borderRadius: 32,
             boxShadow: '0 8px 32px rgba(10,35,66,0.18)',
+            padding: 0,
+            overflow: 'hidden',
+            width: '100%',
+            maxWidth: 540,
             margin: '0 auto',
             display: 'block',
-          }}
-        />
+          }}>
+            <img
+              src={heroImg}
+              alt="Hotel lobby"
+              style={{
+                width: '100%',
+                display: 'block',
+                minHeight: 320,
+                maxHeight: 420,
+                objectFit: 'cover',
+              }}
+            />
+          </div>
+        </div>
+      </section>
+      {/* Testimonials Section */}
+      <section style={{
+        background: 'rgba(255,255,255,0.10)',
+        padding: '36px 0 24px',
+        margin: '0 auto',
+        maxWidth: 1200,
+        borderRadius: 24,
+        boxShadow: '0 2px 16px rgba(10,35,66,0.08)',
+        marginBottom: 32,
+      }}>
+        <h2 style={{ color: '#fff', fontWeight: 800, fontSize: '2rem', textAlign: 'center', marginBottom: 24, letterSpacing: '-1px' }}>
+          What Our Guests Say
+        </h2>
+        <div style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: 32,
+          justifyContent: 'center',
+          alignItems: 'stretch',
+        }}>
+          <div style={{ background: '#fff', color: '#0a2342', borderRadius: 16, boxShadow: '0 2px 16px rgba(10,35,66,0.10)', maxWidth: 340, padding: 24, minWidth: 220 }}>
+            <p style={{ fontStyle: 'italic', marginBottom: 12 }}>
+              “StayEase made booking my vacation so easy and stress-free. The hotel was beautiful and the service was top-notch!”
+            </p>
+            <div style={{ fontWeight: 700 }}>— Sarah W.</div>
+          </div>
+          <div style={{ background: '#fff', color: '#0a2342', borderRadius: 16, boxShadow: '0 2px 16px rgba(10,35,66,0.10)', maxWidth: 340, padding: 24, minWidth: 220 }}>
+            <p style={{ fontStyle: 'italic', marginBottom: 12 }}>
+              “I found the best deals on StayEase and the booking process was seamless. Highly recommend!”
+            </p>
+            <div style={{ fontWeight: 700 }}>— James L.</div>
+          </div>
+          <div style={{ background: '#fff', color: '#0a2342', borderRadius: 16, boxShadow: '0 2px 16px rgba(10,35,66,0.10)', maxWidth: 340, padding: 24, minWidth: 220 }}>
+            <p style={{ fontStyle: 'italic', marginBottom: 12 }}>
+              “The variety of hotels and the quality of service exceeded my expectations. Will book again!”
+            </p>
+            <div style={{ fontWeight: 700 }}>— Priya S.</div>
+          </div>
+        </div>
       </section>
 
       {/* Partner Logos */}

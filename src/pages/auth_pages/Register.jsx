@@ -1,33 +1,60 @@
+
 import React, { useState } from 'react';
 import { useNavigate, Navigate, Link } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
+import useRegister from '../../hooks/useRegister';
 import ImageConstant from '../../utils/imageConstant';
 
+
 export default function Register() {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
-  const [error, setError] = useState('');
   const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const { registerRequest, loading, error, setError } = useRegister();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    if (!email.trim() || !password.trim()) {
-      setError('Email and password required');
+    if (!name.trim() || !email.trim() || !password.trim()) {
+      setError('Name, email and password required');
       return;
     }
     if (password !== confirm) {
       setError('Passwords do not match');
       return;
     }
-    // Simulate registration success
-    login(email);
-    navigate('/', { replace: true });
+    const result = await registerRequest(name, email, password);
+    if (result) {
+      login(email);
+      navigate('/', { replace: true });
+    }
+    // error is handled by the hook
   };
 
   if (isAuthenticated) return <Navigate to="/" replace />;
+  if (loading) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        width: '100vw',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'linear-gradient(120deg, #2563eb 0%, #4f8cff 100%)',
+      }}>
+        <video
+          src="https://assets.mixkit.co/videos/preview/mixkit-loading-animation-313.mp4"
+          autoPlay
+          loop
+          muted
+          style={{ width: 120, height: 120, borderRadius: 16, boxShadow: '0 4px 24px rgba(37,99,235,0.18)' }}
+        />
+      </div>
+    );
+  }
 
   return (
     <div style={{
@@ -76,6 +103,24 @@ export default function Register() {
           <div style={{ color: '#e0e7ff', margin: '18px 0 28px', fontSize: '1.1rem' }}>Register to start booking your stay.</div>
           <form onSubmit={handleSubmit} style={{ width: '100%' }}>
             {error && <div style={{ color: '#b91c1c', marginBottom: 12, fontWeight: 600 }}>{error}</div>}
+            <input
+              type="text"
+              placeholder="Full Name"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              required
+              style={{
+                width: '100%',
+                padding: '14px',
+                marginBottom: 18,
+                border: 'none',
+                borderRadius: 8,
+                fontSize: '1.08rem',
+                background: '#f3f6fd',
+                color: '#222',
+                boxShadow: '0 1px 4px rgba(37,99,235,0.07)',
+              }}
+            />
             <input
               type="email"
               placeholder="Email"

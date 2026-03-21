@@ -1,29 +1,55 @@
 import ImageConstant from '../../utils/imageConstant';
+import useLogin from '../../hooks/useLogin';
 import React, { useState } from 'react';
-
 import { useNavigate, Navigate, Link } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
 
-export default function Login() {
+function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
     const { login, isAuthenticated } = useAuth();
     const navigate = useNavigate();
+    const { loginRequest, loading, error, setError } = useLogin();
 
-    const handleSubmit = (event) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
         setError('');
         if (!email.trim() || !password.trim()) {
             setError('Email and password required');
             return;
         }
-        login(email);
-        navigate('/', { replace: true });
+        const result = await loginRequest(email, password);
+        if (result) {
+            login(email); // Optionally pass result if your login expects it
+            navigate('/', { replace: true });
+        }
+        // error is handled by the hook
     };
 
     if (isAuthenticated) {
         return <Navigate to="/" replace />;
+    }
+
+    if (loading) {
+        return (
+            <div style={{
+                minHeight: '100vh',
+                width: '100vw',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'linear-gradient(120deg, #2563eb 0%, #4f8cff 100%)',
+            }}>
+                {/* Animation or video loader */}
+                <video
+                    src="https://assets.mixkit.co/videos/preview/mixkit-loading-animation-313.mp4"
+                    autoPlay
+                    loop
+                    muted
+                    style={{ width: 120, height: 120, borderRadius: 16, boxShadow: '0 4px 24px rgba(37,99,235,0.18)' }}
+                />
+            </div>
+        );
     }
 
     return (
@@ -93,7 +119,7 @@ export default function Login() {
                             </label>
                             <Link to="#" style={{ color: '#e0e7ff', fontSize: '0.98rem', textDecoration: 'underline', fontWeight: 500 }}>Forgot password?</Link>
                         </div>
-                        <button type="submit" style={{
+                        <button type="submit" disabled={loading} style={{
                             width: '100%',
                             borderRadius: 8,
                             padding: '13px',
@@ -104,7 +130,7 @@ export default function Login() {
                             border: 'none',
                             boxShadow: '0 2px 8px rgba(37,99,235,0.13)',
                             marginTop: 6,
-                        }}>Log in</button>
+                        }}>{loading ? 'Logging in...' : 'Log in'}</button>
                         <div style={{ marginTop: 22, textAlign: 'center', fontSize: '1.04rem', color: '#e0e7ff' }}>
                             Don't have an account?{' '}
                             <Link to="/register" style={{ color: '#fff', fontWeight: 700, textDecoration: 'underline' }}>Create your account</Link>
@@ -135,6 +161,8 @@ export default function Login() {
                 />
             </div>
         </div>
-
     );
 }
+
+export default Login;
+
