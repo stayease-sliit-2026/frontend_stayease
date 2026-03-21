@@ -5,7 +5,12 @@ import Register from '../pages/auth_pages/Register';
 import NotFound from '../pages/NotFound';
 import HotelServiceRoutes from './HotelServiceRoutes';
 import HotelAdminRoutes from './HotelAdminRoutes';
-import BookingServiceRoutes from './BookingServiceRoutes';
+import useAuth from '../hooks/useAuth';
+
+function ProtectedRoute({ children }) {
+	const { isAuthenticated } = useAuth();
+	return isAuthenticated ? children : <Navigate to="/login" replace />;
+}
 
 export default function AppRoutes() {
 	return (
@@ -15,7 +20,6 @@ export default function AppRoutes() {
 			<Route path="/" element={<Home />} />
 			<Route path="/hotel-service/*" element={<HotelServiceRoutes />} />
 			<Route path="/hotel-admin/*" element={<HotelAdminRoutes />} />
-			<Route path="/booking-service/*" element={<BookingServiceRoutes />} />
 			<Route path="*" element={<NotFound />} />
 		</Routes>
 	);
