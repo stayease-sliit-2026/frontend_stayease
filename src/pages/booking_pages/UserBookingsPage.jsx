@@ -1,9 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { FiAlertCircle, FiCheckCircle, FiEye, FiLoader, FiRefreshCw, FiXCircle } from 'react-icons/fi'
 import { bookingPaths } from '../../utils/bookingPaths'
-import { cancelBooking, confirmBooking, getUserBookings, hasBookingToken } from '../../services/bookingApi'
-import BackButton from '../../components/hotel_components/BackButton'
+import { cancelBooking, confirmBooking, getUserBookings, getUserBookingStats, hasBookingToken } from '../../services/bookingApi'
 
 const BRAND = {
   dark: '#334eac',
@@ -25,12 +24,44 @@ function StatusBadge({ status }) {
   return <span className="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700 ring-1 ring-amber-200">Pending</span>
 }
 
+function getStatCards(stats = []) {
+  const map = stats.reduce((acc, item) => {
+    acc[item?._id] = item
+    return acc
+  }, {})
+
+  return [
+    {
+      key: 'confirmed',
+      label: 'Confirmed',
+      count: map.confirmed?.count || 0,
+      totalSpent: map.confirmed?.totalSpent || 0,
+      tone: 'text-emerald-700',
+    },
+    {
+      key: 'pending',
+      label: 'Pending',
+      count: map.pending?.count || 0,
+      totalSpent: map.pending?.totalSpent || 0,
+      tone: 'text-amber-700',
+    },
+    {
+      key: 'cancelled',
+      label: 'Cancelled',
+      count: map.cancelled?.count || 0,
+      totalSpent: map.cancelled?.totalSpent || 0,
+      tone: 'text-rose-700',
+    },
+  ]
+}
+
 function UserBookingsPage() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const isAuthed = hasBookingToken()
 
   const [bookings, setBookings] = useState([])
+  const [stats, setStats] = useState([])
   const [pagination, setPagination] = useState({ total: 0, limit: 10, skip: 0, hasMore: false })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -47,20 +78,24 @@ function UserBookingsPage() {
       return
     }
 
-    async function loadBookings() {
+    async function loadData() {
       try {
         setLoading(true)
         setError('')
 
-        const response = await getUserBookings({
-          status: status || undefined,
-          hotelId: hotelId || undefined,
-          limit,
-          skip,
-        })
+        const [bookingsResponse, statsData] = await Promise.all([
+          getUserBookings({
+            status: status || undefined,
+            hotelId: hotelId || undefined,
+            limit,
+            skip,
+          }),
+          getUserBookingStats(),
+        ])
 
-        setBookings(response?.data || [])
-        setPagination(response?.pagination || { total: 0, limit, skip, hasMore: false })
+        setBookings(bookingsResponse?.data || [])
+        setPagination(bookingsResponse?.pagination || { total: 0, limit, skip, hasMore: false })
+        setStats(statsData?.data || [])
       } catch (err) {
         setError(err?.message || 'Unable to fetch bookings')
       } finally {
@@ -68,7 +103,7 @@ function UserBookingsPage() {
       }
     }
 
-    loadBookings()
+    loadData()
   }, [hotelId, isAuthed, limit, skip, status])
 
   function updateFilters(next) {
@@ -125,11 +160,16 @@ function UserBookingsPage() {
     }
   }
 
+  const statCards = useMemo(() => getStatCards(stats), [stats])
+
   return (
     <section className="min-h-screen bg-slate-50">
       <div className="mx-auto w-full max-w-6xl px-4 py-7">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <BackButton fallbackPath={bookingPaths.home} label="Back to booking dashboard" />
+          <div>
+            <h1 className="text-2xl font-bold" style={{ color: BRAND.dark }}>My Bookings</h1>
+            <p className="mt-1 text-sm text-slate-600">View and manage all your reservations</p>
+          </div>
           <div className="flex flex-wrap gap-2">
             <Link
               to={bookingPaths.create}
@@ -148,10 +188,24 @@ function UserBookingsPage() {
           </div>
         </div>
 
+        <div className="mb-6 grid gap-4 md:grid-cols-3">
+          {statCards.map((item) => (
+            <article
+              key={item.key}
+              className="rounded-2xl border bg-white p-4 shadow-sm"
+              style={{ borderColor: BRAND.light }}
+            >
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{item.label}</p>
+              <p className={`mt-2 text-2xl font-bold ${item.tone}`}>{item.count}</p>
+              <p className="mt-1 text-sm text-slate-600">Total spent: ${Number(item.totalSpent).toFixed(2)}</p>
+            </article>
+          ))}
+        </div>
+
         <div className="rounded-3xl border bg-white p-5 shadow-sm" style={{ borderColor: BRAND.light }}>
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-bold" style={{ color: BRAND.dark }}>My bookings</h1>
+              <h2 className="text-lg font-semibold" style={{ color: BRAND.dark }}>Booking Records</h2>
               <p className="mt-1 text-sm text-slate-600">Filter and manage your bookings</p>
             </div>
             <button

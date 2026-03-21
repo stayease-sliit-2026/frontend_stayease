@@ -90,9 +90,9 @@ function BookingServiceHomePage() {
                 <FiGrid size={14} />
                 Booking Service
               </div>
-              <h1 className="text-2xl font-bold md:text-3xl">Manage bookings without leaving the hotel flow</h1>
+              <h1 className="text-2xl font-bold md:text-3xl">Manage bookings </h1>
               <p className="mt-2 max-w-xl text-sm text-white/90 md:text-base">
-                Create bookings, track statuses, confirm reservations and monitor spending from one clean dashboard.
+                Create bookings, track statuses, confirm reservations and monitor spendings.
               </p>
 
               <div className="mt-5 flex flex-wrap gap-3">
