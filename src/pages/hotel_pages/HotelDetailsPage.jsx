@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { FiCheckCircle, FiEye, FiMapPin, FiSearch, FiStar, FiUsers, FiX } from 'react-icons/fi'
 import { TbCurrencyDollar } from 'react-icons/tb'
 import { getHotelById, listHotelRooms } from '../../services/hotelApi'
@@ -7,6 +7,7 @@ import BackButton from '../../components/hotel_components/BackButton'
 
 function HotelDetailsPage() {
   const { id } = useParams()
+  const navigate = useNavigate()
   const [hotel, setHotel] = useState(null)
   const [rooms, setRooms] = useState([])
   const [selectedGalleryImage, setSelectedGalleryImage] = useState('')
@@ -42,6 +43,24 @@ function HotelDetailsPage() {
   function resetRoomFilters() {
     setRoomSearch('')
     setGuestFilter('')
+  }
+
+  function openBookingCreate(room) {
+    const params = new URLSearchParams({
+      hotelId: id,
+      roomId: room._id,
+      roomType: room.type || '',
+      pricePerNight: String(room.price || ''),
+    })
+
+    navigate(`/booking-service/create?${params.toString()}`, {
+      state: {
+        hotelId: id,
+        roomId: room._id,
+        roomType: room.type || '',
+        roomPrice: room.price || '',
+      },
+    })
   }
 
   useEffect(() => {
@@ -310,6 +329,7 @@ function HotelDetailsPage() {
                       <td className="px-4 py-3 text-right">
                         <button
                           type="button"
+                          onClick={() => openBookingCreate(room)}
                           className="inline-flex items-center justify-center rounded-md bg-[#0071c2] px-4 py-2 text-sm font-semibold text-white hover:bg-[#005999]"
                         >
                           Reserve
@@ -415,6 +435,7 @@ function HotelDetailsPage() {
               <div className="flex justify-end">
                 <button
                   type="button"
+                  onClick={() => openBookingCreate(selectedRoom)}
                   className="inline-flex items-center justify-center gap-1.5 rounded-md bg-[#0071c2] px-4 py-2 text-sm font-semibold text-white hover:bg-[#005999]"
                 >
                   Reserve

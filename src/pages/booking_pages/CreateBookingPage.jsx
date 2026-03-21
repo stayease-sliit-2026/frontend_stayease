@@ -1,0 +1,372 @@
+import { useEffect, useMemo, useState } from 'react'
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
+import { FiAlertCircle, FiCalendar, FiCheckCircle, FiLoader, FiUsers } from 'react-icons/fi'
+import { bookingPaths } from '../../utils/bookingPaths'
+import { checkRoomAvailability, createBooking, hasBookingToken } from '../../services/bookingApi'
+import BackButton from '../../components/hotel_components/BackButton'
+
+const BRAND = {
+  dark: '#334eac',
+  medium: '#7096d1',
+  light: '#bad6eb',
+}
+
+function toDatetimeLocalValue(value) {
+  if (!value) return ''
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return ''
+
+  const offset = date.getTimezoneOffset()
+  const localDate = new Date(date.getTime() - offset * 60000)
+  return localDate.toISOString().slice(0, 16)
+}
+
+function toIsoOrEmpty(value) {
+  if (!value) return ''
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return ''
+  return date.toISOString()
+}
+
+function calculateNights(checkIn, checkOut) {
+  if (!checkIn || !checkOut) return 0
+
+  const start = new Date(checkIn)
+  const end = new Date(checkOut)
+
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || end <= start) return 0
+
+  return Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24))
+}
+
+function CreateBookingPage() {
+  const location = useLocation()
+  const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+
+  const isAuthed = hasBookingToken()
+  const stateHotelId = location.state?.hotelId || ''
+  const stateRoomId = location.state?.roomId || ''
+  const stateRoomType = location.state?.roomType || ''
+  const stateRoomPrice = location.state?.roomPrice || ''
+
+  const [form, setForm] = useState({
+    hotelId: searchParams.get('hotelId') || stateHotelId,
+    roomId: searchParams.get('roomId') || stateRoomId,
+    checkIn: '',
+    checkOut: '',
+    numberOfGuests: 1,
+    totalPrice: '',
+    roomType: searchParams.get('roomType') || stateRoomType,
+    specialRequests: '',
+    pricePerNight: searchParams.get('pricePerNight') || stateRoomPrice || '',
+  })
+
+  const [availability, setAvailability] = useState(null)
+  const [checkingAvailability, setCheckingAvailability] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
+
+  const nights = useMemo(() => calculateNights(form.checkIn, form.checkOut), [form.checkIn, form.checkOut])
+  const calculatedTotal = useMemo(() => {
+    const nightly = Number(form.pricePerNight)
+    if (!Number.isFinite(nightly) || nightly <= 0 || nights <= 0) return ''
+    return (nightly * nights).toFixed(2)
+  }, [form.pricePerNight, nights])
+
+  useEffect(() => {
+    if (calculatedTotal && !form.totalPrice) {
+      setForm((prev) => ({ ...prev, totalPrice: calculatedTotal }))
+    }
+  }, [calculatedTotal, form.totalPrice])
+
+  async function handleCheckAvailability() {
+    if (!form.hotelId || !form.roomId || !form.checkIn || !form.checkOut) {
+      setError('Hotel, room, check-in and check-out are required to check availability.')
+      return
+    }
+
+    try {
+      setError('')
+      setAvailability(null)
+      setCheckingAvailability(true)
+
+      const data = await checkRoomAvailability({
+        hotelId: form.hotelId,
+        roomId: form.roomId,
+        checkIn: toIsoOrEmpty(form.checkIn),
+        checkOut: toIsoOrEmpty(form.checkOut),
+      })
+
+      setAvailability(data?.data || null)
+
+      if (data?.data?.pricePerNight) {
+        const nightly = Number(data.data.pricePerNight)
+        const total = nights > 0 ? (nightly * nights).toFixed(2) : ''
+
+        setForm((prev) => ({
+          ...prev,
+          pricePerNight: nightly,
+          totalPrice: total || prev.totalPrice,
+        }))
+      }
+    } catch (err) {
+      setError(err?.message || 'Unable to check availability')
+    } finally {
+      setCheckingAvailability(false)
+    }
+  }
+
+  async function handleSubmit(event) {
+    event.preventDefault()
+
+    if (!isAuthed) {
+      setError('Please login before creating a booking.')
+      return
+    }
+
+    if (!form.hotelId || !form.roomId || !form.checkIn || !form.checkOut || !form.totalPrice) {
+      setError('Please complete all required fields.')
+      return
+    }
+
+    if (nights <= 0) {
+      setError('Check-out must be after check-in.')
+      return
+    }
+
+    try {
+      setSubmitting(true)
+      setError('')
+      setSuccess('')
+
+      const payload = {
+        hotelId: form.hotelId,
+        roomId: form.roomId,
+        checkIn: toIsoOrEmpty(form.checkIn),
+        checkOut: toIsoOrEmpty(form.checkOut),
+        numberOfGuests: Number(form.numberOfGuests) || 1,
+        totalPrice: Number(form.totalPrice),
+        roomType: form.roomType || undefined,
+        specialRequests: form.specialRequests || undefined,
+      }
+
+      const response = await createBooking(payload)
+      const bookingId = response?.data?._id
+
+      setSuccess(response?.message || 'Booking created successfully')
+
+      if (bookingId) {
+        setTimeout(() => {
+          navigate(bookingPaths.details(bookingId), { replace: true })
+        }, 700)
+      }
+    } catch (err) {
+      setError(err?.message || 'Unable to create booking')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  return (
+    <section className="min-h-screen bg-slate-50">
+      <div className="mx-auto w-full max-w-4xl px-4 py-7">
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <BackButton fallbackPath={bookingPaths.home} label="Back to booking dashboard" />
+          <Link
+            to={bookingPaths.list}
+            className="rounded-md border bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
+            style={{ borderColor: BRAND.light }}
+          >
+            View My Bookings
+          </Link>
+        </div>
+
+        <div
+          className="rounded-3xl border bg-white p-5 shadow-sm md:p-6"
+          style={{ borderColor: BRAND.light }}
+        >
+          <h1 className="text-2xl font-bold" style={{ color: BRAND.dark }}>Create booking</h1>
+          <p className="mt-1 text-sm text-slate-600">
+            Fill your stay details, validate room availability, and create a pending booking.
+          </p>
+
+          {!isAuthed && (
+            <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+              You are not logged in. Go to login page and come back with your token.
+            </div>
+          )}
+
+          {error && (
+            <div className="mt-4 flex items-start gap-2 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+              <FiAlertCircle className="mt-0.5" size={15} />
+              {error}
+            </div>
+          )}
+
+          {success && (
+            <div className="mt-4 flex items-start gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+              <FiCheckCircle className="mt-0.5" size={15} />
+              {success}
+            </div>
+          )}
+
+          <form className="mt-5 space-y-4" onSubmit={handleSubmit}>
+            <div className="grid gap-4 md:grid-cols-2">
+              <label className="text-sm">
+                <span className="mb-1 block font-medium text-slate-700">Hotel ID</span>
+                <input
+                  className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none"
+                  style={{ borderColor: BRAND.light }}
+                  value={form.hotelId}
+                  onChange={(event) => setForm((prev) => ({ ...prev, hotelId: event.target.value }))}
+                  placeholder="hotel123"
+                  required
+                />
+              </label>
+
+              <label className="text-sm">
+                <span className="mb-1 block font-medium text-slate-700">Room ID</span>
+                <input
+                  className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none"
+                  style={{ borderColor: BRAND.light }}
+                  value={form.roomId}
+                  onChange={(event) => setForm((prev) => ({ ...prev, roomId: event.target.value }))}
+                  placeholder="room456"
+                  required
+                />
+              </label>
+
+              <label className="text-sm">
+                <span className="mb-1 flex items-center gap-2 font-medium text-slate-700"><FiCalendar size={14} /> Check-in</span>
+                <input
+                  type="datetime-local"
+                  className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none"
+                  style={{ borderColor: BRAND.light }}
+                  value={toDatetimeLocalValue(form.checkIn)}
+                  onChange={(event) => setForm((prev) => ({ ...prev, checkIn: event.target.value }))}
+                  required
+                />
+              </label>
+
+              <label className="text-sm">
+                <span className="mb-1 flex items-center gap-2 font-medium text-slate-700"><FiCalendar size={14} /> Check-out</span>
+                <input
+                  type="datetime-local"
+                  className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none"
+                  style={{ borderColor: BRAND.light }}
+                  value={toDatetimeLocalValue(form.checkOut)}
+                  onChange={(event) => setForm((prev) => ({ ...prev, checkOut: event.target.value }))}
+                  required
+                />
+              </label>
+
+              <label className="text-sm">
+                <span className="mb-1 flex items-center gap-2 font-medium text-slate-700"><FiUsers size={14} /> Guests</span>
+                <input
+                  type="number"
+                  min="1"
+                  className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none"
+                  style={{ borderColor: BRAND.light }}
+                  value={form.numberOfGuests}
+                  onChange={(event) => setForm((prev) => ({ ...prev, numberOfGuests: event.target.value }))}
+                  required
+                />
+              </label>
+
+              <label className="text-sm">
+                <span className="mb-1 block font-medium text-slate-700">Room Type (optional)</span>
+                <input
+                  className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none"
+                  style={{ borderColor: BRAND.light }}
+                  value={form.roomType}
+                  onChange={(event) => setForm((prev) => ({ ...prev, roomType: event.target.value }))}
+                  placeholder="Deluxe"
+                />
+              </label>
+
+              <label className="text-sm">
+                <span className="mb-1 block font-medium text-slate-700">Price per night</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none"
+                  style={{ borderColor: BRAND.light }}
+                  value={form.pricePerNight}
+                  onChange={(event) => setForm((prev) => ({ ...prev, pricePerNight: event.target.value }))}
+                  placeholder="100"
+                />
+              </label>
+
+              <label className="text-sm">
+                <span className="mb-1 block font-medium text-slate-700">Total Price</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none"
+                  style={{ borderColor: BRAND.light }}
+                  value={form.totalPrice}
+                  onChange={(event) => setForm((prev) => ({ ...prev, totalPrice: event.target.value }))}
+                  placeholder="500"
+                  required
+                />
+                <p className="mt-1 text-xs text-slate-500">
+                  Nights: {nights} {nights === 1 ? 'night' : 'nights'}
+                </p>
+              </label>
+            </div>
+
+            <label className="block text-sm">
+              <span className="mb-1 block font-medium text-slate-700">Special Requests (optional)</span>
+              <textarea
+                className="min-h-24 w-full rounded-lg border px-3 py-2 text-sm focus:outline-none"
+                style={{ borderColor: BRAND.light }}
+                value={form.specialRequests}
+                onChange={(event) => setForm((prev) => ({ ...prev, specialRequests: event.target.value }))}
+                placeholder="High floor, late check-in, quiet room..."
+              />
+            </label>
+
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                onClick={handleCheckAvailability}
+                disabled={checkingAvailability}
+                className="inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-semibold text-white disabled:opacity-70"
+                style={{ backgroundColor: BRAND.medium }}
+              >
+                {checkingAvailability ? <FiLoader className="animate-spin" size={14} /> : null}
+                Check Availability
+              </button>
+
+              <button
+                type="submit"
+                disabled={submitting || !isAuthed}
+                className="inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-semibold text-white disabled:opacity-70"
+                style={{ backgroundColor: BRAND.dark }}
+              >
+                {submitting ? <FiLoader className="animate-spin" size={14} /> : null}
+                Create Booking
+              </button>
+            </div>
+
+            {availability && (
+              <div
+                className={`rounded-xl border px-3 py-2 text-sm ${availability.available ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-rose-200 bg-rose-50 text-rose-700'}`}
+              >
+                {availability.available
+                  ? `Room is available. Price per night: $${availability.pricePerNight}`
+                  : 'Room is not available for selected dates.'}
+              </div>
+            )}
+          </form>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+export default CreateBookingPage
