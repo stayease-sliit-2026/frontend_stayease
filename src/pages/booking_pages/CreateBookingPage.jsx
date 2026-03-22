@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-do
 import { FiAlertCircle, FiCalendar, FiCheckCircle, FiLoader, FiUsers } from 'react-icons/fi'
 import { bookingPaths } from '../../utils/bookingPaths'
 import { checkRoomAvailability, createBooking, hasBookingToken } from '../../services/bookingApi'
+import useHotelService from '../../hooks/useHotelService'
 import BackButton from '../../components/hotel_components/BackButton'
 
 const BRAND = {
@@ -11,14 +12,31 @@ const BRAND = {
   light: '#bad6eb',
 }
 
+function getLocalDatetimeMin() {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  const hours = String(now.getHours()).padStart(2, '0')
+  const minutes = String(now.getMinutes()).padStart(2, '0')
+  return `${year}-${month}-${day}T${hours}:${minutes}`
+}
+
 function toDatetimeLocalValue(value) {
   if (!value) return ''
+  // Keep native datetime-local values unchanged to avoid timezone drift.
+  if (typeof value === 'string' && value.includes('T') && value.length >= 16) {
+    return value.slice(0, 16)
+  }
+
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return ''
-
-  const offset = date.getTimezoneOffset()
-  const localDate = new Date(date.getTime() - offset * 60000)
-  return localDate.toISOString().slice(0, 16)
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  const hours = String(date.getHours()).padStart(2, '0')
+  const minutes = String(date.getMinutes()).padStart(2, '0')
+  return `${year}-${month}-${day}T${hours}:${minutes}`
 }
 
 function toIsoOrEmpty(value) {
@@ -26,6 +44,17 @@ function toIsoOrEmpty(value) {
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return ''
   return date.toISOString()
+}
+
+function normalizeAvailabilityPayload(payload) {
+  if (!payload) return null
+  if (typeof payload === 'object' && payload.data && typeof payload.data === 'object') {
+    return payload.data
+  }
+  if (typeof payload === 'object') {
+    return payload
+  }
+  return null
 }
 
 function calculateNights(checkIn, checkOut) {
@@ -39,10 +68,46 @@ function calculateNights(checkIn, checkOut) {
   return Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24))
 }
 
+function validateBookingDates(checkIn, checkOut) {
+  if (!checkIn || !checkOut) {
+    return { valid: false, message: 'Select both check-in and check-out dates.' }
+  }
+
+  const start = new Date(checkIn)
+  const end = new Date(checkOut)
+  const now = new Date()
+
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+    return { valid: false, message: 'Please provide valid date and time values.' }
+  }
+
+  if (start < now) {
+    return { valid: false, message: 'Check-in cannot be in the past.' }
+  }
+
+  if (end <= start) {
+    return { valid: false, message: 'Check-out must be after check-in.' }
+  }
+
+  return { valid: true, message: '' }
+}
+
+function getReadableAvailabilityError(error) {
+  if (!error) return 'Unable to check availability'
+
+  const details = error?.raw?.details
+  if (typeof details === 'string' && details.toLowerCase().includes('enotfound')) {
+    return 'Booking service cannot reach hotel service right now. Please try again later.'
+  }
+
+  return error?.message || 'Unable to check availability'
+}
+
 function CreateBookingPage() {
   const location = useLocation()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
+  const { getHotelById, listHotelRooms } = useHotelService()
 
   const isAuthed = hasBookingToken()
   const stateHotelId = location.state?.hotelId || ''
@@ -63,27 +128,103 @@ function CreateBookingPage() {
   })
 
   const [availability, setAvailability] = useState(null)
+  const [availabilityChecked, setAvailabilityChecked] = useState(false)
   const [checkingAvailability, setCheckingAvailability] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [hotelName, setHotelName] = useState('')
+  const [roomDisplayName, setRoomDisplayName] = useState('')
+  const minDatetimeLocal = useMemo(() => getLocalDatetimeMin(), [])
 
   const nights = useMemo(() => calculateNights(form.checkIn, form.checkOut), [form.checkIn, form.checkOut])
+  const dateValidation = useMemo(
+    () => validateBookingDates(form.checkIn, form.checkOut),
+    [form.checkIn, form.checkOut],
+  )
   const calculatedTotal = useMemo(() => {
     const nightly = Number(form.pricePerNight)
     if (!Number.isFinite(nightly) || nightly <= 0 || nights <= 0) return ''
     return (nightly * nights).toFixed(2)
   }, [form.pricePerNight, nights])
 
+  const canCreateBooking =
+    !submitting &&
+    isAuthed &&
+    Boolean(form.hotelId) &&
+    Boolean(form.roomId) &&
+    dateValidation.valid &&
+    Number(form.totalPrice) > 0 &&
+    availabilityChecked &&
+    Boolean(availability?.available)
+
   useEffect(() => {
-    if (calculatedTotal && !form.totalPrice) {
-      setForm((prev) => ({ ...prev, totalPrice: calculatedTotal }))
+    setForm((prev) => {
+      const nextTotal = calculatedTotal || ''
+      if (prev.totalPrice === nextTotal) return prev
+      return { ...prev, totalPrice: nextTotal }
+    })
+  }, [calculatedTotal])
+
+  useEffect(() => {
+    setAvailability(null)
+    setAvailabilityChecked(false)
+  }, [form.hotelId, form.roomId, form.checkIn, form.checkOut])
+
+  useEffect(() => {
+    async function resolveReadableNames() {
+      if (!form.hotelId) {
+        setHotelName('')
+        setRoomDisplayName('')
+        return
+      }
+
+      try {
+        const [hotel, rooms] = await Promise.all([
+          getHotelById(form.hotelId),
+          listHotelRooms(form.hotelId),
+        ])
+
+        setHotelName(hotel?.name || '')
+
+        const selectedRoom = Array.isArray(rooms)
+          ? rooms.find((room) => room?._id === form.roomId)
+          : null
+
+        if (selectedRoom) {
+          const readable = selectedRoom.type
+            ? `${selectedRoom.type}${selectedRoom.capacity ? ` (${selectedRoom.capacity} guests)` : ''}`
+            : selectedRoom._id
+
+          setRoomDisplayName(readable || '')
+
+          // Keep booking form metadata in sync with the selected room details.
+          setForm((prev) => ({
+            ...prev,
+            roomType: prev.roomType || selectedRoom.type || '',
+            pricePerNight: prev.pricePerNight || selectedRoom.price || '',
+          }))
+        } else {
+          setRoomDisplayName('')
+        }
+      } catch {
+        // Do not block booking creation if labels cannot be fetched.
+        setHotelName('')
+        setRoomDisplayName('')
+      }
     }
-  }, [calculatedTotal, form.totalPrice])
+
+    resolveReadableNames()
+  }, [form.hotelId, form.roomId, getHotelById, listHotelRooms])
 
   async function handleCheckAvailability() {
-    if (!form.hotelId || !form.roomId || !form.checkIn || !form.checkOut) {
-      setError('Hotel, room, check-in and check-out are required to check availability.')
+    if (!form.hotelId || !form.roomId) {
+      setError('Hotel and room are required to check availability.')
+      return
+    }
+
+    if (!dateValidation.valid) {
+      setError(dateValidation.message)
       return
     }
 
@@ -99,10 +240,12 @@ function CreateBookingPage() {
         checkOut: toIsoOrEmpty(form.checkOut),
       })
 
-      setAvailability(data?.data || null)
+      const availabilityPayload = normalizeAvailabilityPayload(data)
+      setAvailability(availabilityPayload)
+      setAvailabilityChecked(true)
 
-      if (data?.data?.pricePerNight) {
-        const nightly = Number(data.data.pricePerNight)
+      if (availabilityPayload?.pricePerNight) {
+        const nightly = Number(availabilityPayload.pricePerNight)
         const total = nights > 0 ? (nightly * nights).toFixed(2) : ''
 
         setForm((prev) => ({
@@ -112,7 +255,8 @@ function CreateBookingPage() {
         }))
       }
     } catch (err) {
-      setError(err?.message || 'Unable to check availability')
+      setAvailabilityChecked(false)
+      setError(getReadableAvailabilityError(err))
     } finally {
       setCheckingAvailability(false)
     }
@@ -126,13 +270,13 @@ function CreateBookingPage() {
       return
     }
 
-    if (!form.hotelId || !form.roomId || !form.checkIn || !form.checkOut || !form.totalPrice) {
+    if (!form.hotelId || !form.roomId || !form.totalPrice) {
       setError('Please complete all required fields.')
       return
     }
 
-    if (nights <= 0) {
-      setError('Check-out must be after check-in.')
+    if (!dateValidation.valid) {
+      setError(dateValidation.message)
       return
     }
 
@@ -153,7 +297,8 @@ function CreateBookingPage() {
       }
 
       const response = await createBooking(payload)
-      const bookingId = response?.data?._id
+      const bookingData = response?.data && typeof response.data === 'object' ? response.data : response
+      const bookingId = bookingData?._id
 
       setSuccess(response?.message || 'Booking created successfully')
 
@@ -218,6 +363,28 @@ function CreateBookingPage() {
               <p className="mb-3 text-sm font-semibold text-slate-600">Room Information (From Hotel Service)</p>
               <div className="grid gap-4 md:grid-cols-2">
                 <label className="text-sm">
+                  <span className="mb-1 block font-medium text-slate-700">Hotel Name</span>
+                  <input
+                    className="w-full rounded-lg border bg-slate-100 px-3 py-2 text-sm text-slate-600 cursor-not-allowed focus:outline-none"
+                    style={{ borderColor: BRAND.light }}
+                    value={hotelName || '-'}
+                    disabled
+                    placeholder="GrandBella"
+                  />
+                </label>
+
+                <label className="text-sm">
+                  <span className="mb-1 block font-medium text-slate-700">Room</span>
+                  <input
+                    className="w-full rounded-lg border bg-slate-100 px-3 py-2 text-sm text-slate-600 cursor-not-allowed focus:outline-none"
+                    style={{ borderColor: BRAND.light }}
+                    value={roomDisplayName || form.roomType || '-'}
+                    disabled
+                    placeholder="Double (2 guests)"
+                  />
+                </label>
+
+                <label className="text-sm">
                   <span className="mb-1 block font-medium text-slate-700">Hotel ID</span>
                   <input
                     className="w-full rounded-lg border bg-slate-100 px-3 py-2 text-sm text-slate-600 cursor-not-allowed focus:outline-none"
@@ -244,7 +411,7 @@ function CreateBookingPage() {
                   <input
                     className="w-full rounded-lg border bg-slate-100 px-3 py-2 text-sm text-slate-600 cursor-not-allowed focus:outline-none"
                     style={{ borderColor: BRAND.light }}
-                    value={form.roomType}
+                    value={form.roomType || roomDisplayName}
                     disabled
                     placeholder="Deluxe"
                   />
@@ -275,6 +442,7 @@ function CreateBookingPage() {
                     className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none"
                     style={{ borderColor: BRAND.light }}
                     value={toDatetimeLocalValue(form.checkIn)}
+                    min={minDatetimeLocal}
                     onChange={(event) => setForm((prev) => ({ ...prev, checkIn: event.target.value }))}
                     required
                   />
@@ -287,6 +455,7 @@ function CreateBookingPage() {
                     className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none"
                     style={{ borderColor: BRAND.light }}
                     value={toDatetimeLocalValue(form.checkOut)}
+                    min={toDatetimeLocalValue(form.checkIn) || minDatetimeLocal}
                     onChange={(event) => setForm((prev) => ({ ...prev, checkOut: event.target.value }))}
                     required
                   />
@@ -344,7 +513,7 @@ function CreateBookingPage() {
               <button
                 type="button"
                 onClick={handleCheckAvailability}
-                disabled={checkingAvailability || !form.hotelId || !form.roomId || !form.checkIn || !form.checkOut}
+                disabled={checkingAvailability || !form.hotelId || !form.roomId || !dateValidation.valid}
                 className="inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-semibold text-white disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{ backgroundColor: BRAND.medium }}
               >
@@ -354,7 +523,7 @@ function CreateBookingPage() {
 
               <button
                 type="submit"
-                disabled={submitting || !isAuthed || !form.hotelId || !form.roomId || nights <= 0}
+                disabled={!canCreateBooking}
                 className="inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-semibold text-white disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{ backgroundColor: BRAND.dark }}
               >
@@ -363,12 +532,24 @@ function CreateBookingPage() {
               </button>
             </div>
 
+            {!dateValidation.valid && (
+              <p className="text-xs text-amber-700">{dateValidation.message}</p>
+            )}
+
+            {dateValidation.valid && !availabilityChecked && (
+              <p className="text-xs text-slate-500">Check availability first to enable Create Booking.</p>
+            )}
+
+            {availabilityChecked && availability && !availability.available && (
+              <p className="text-xs text-rose-700">Selected room is not available for these dates. Please change dates and re-check.</p>
+            )}
+
             {availability && (
               <div
                 className={`rounded-xl border px-3 py-2 text-sm ${availability.available ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-rose-200 bg-rose-50 text-rose-700'}`}
               >
                 {availability.available
-                  ? `✓ Room is available. Price per night: $${availability.pricePerNight}`
+                  ? `✓ Room is available.${availability.pricePerNight ? ` Price per night: $${availability.pricePerNight}` : ''}`
                   : '✗ Room is not available for selected dates.'}
               </div>
             )}

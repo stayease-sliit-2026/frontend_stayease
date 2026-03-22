@@ -7,6 +7,7 @@ import useHotelService from '../../hooks/useHotelService'
 
 function HotelDetailsPage() {
   const { id } = useParams()
+  const navigate = useNavigate()
   const { getHotelById, listHotelRooms } = useHotelService()
   const [hotel, setHotel] = useState(null)
   const [rooms, setRooms] = useState([])
