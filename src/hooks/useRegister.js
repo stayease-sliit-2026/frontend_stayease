@@ -10,8 +10,8 @@ export default function useRegister() {
     setLoading(true);
     setError('');
     try {
-        console.log('Attempting registration with:', { name, email, password, url: AppUrl.APP_URL_MAIN+AppUrl.REGISTER_URL });
-      const response = await api.post(AppUrl.APP_URL_MAIN+AppUrl.REGISTER_URL, {
+        console.log('Attempting registration with:', { name, email, password, url: AppUrl.REGISTER_URL });
+      const response = await api.post(AppUrl.REGISTER_URL, {
         name,
         email,
         password,

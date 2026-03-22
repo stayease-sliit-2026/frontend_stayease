@@ -5,7 +5,7 @@ import useLogin from '../../hooks/useLogin';
 import { Link } from 'react-router-dom';
 
 export default function AdminLogin() {
-  const { handleAdminLogin } = useLogin();
+  const { loginRequest } = useLogin();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPwd, setShowPwd] = useState(false);
@@ -18,10 +18,11 @@ export default function AdminLogin() {
     setError('');
     setLoading(true);
     try {
-      const response = await handleAdminLogin(email, password);
+      const response = await loginRequest(email, password);
       setLoading(false);
-      if (response && response.status === 200 && response.data && response.data.token) {
-        sessionStorage.setItem('adminAuthToken', response.data.token);
+      const token = response?.token || response?.accessToken || response?.data?.token || response?.data?.accessToken;
+      if (token) {
+        sessionStorage.setItem('adminAuthToken', token);
         navigate('/admin/dashboard', { replace: true });
       } else {
         setError('Invalid credentials or server error.');
