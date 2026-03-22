@@ -1,5 +1,4 @@
-import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
-import { useEffect, useState, useRef } from 'react';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import Home from '../pages/Home';
 import Login from '../pages/auth_pages/Login';
 import Register from '../pages/auth_pages/Register';
@@ -15,53 +14,37 @@ function ProtectedRoute({ children }) {
 	return isAuthenticated ? children : <Navigate to="/login" replace />;
 }
 
-export default function AppRoutes() {
-	const location = useLocation();
-	const [hasUserToken, setHasUserToken] = useState(() => !!sessionStorage.getItem('authToken'));
-	const [hasAdminToken, setHasAdminToken] = useState(() => !!sessionStorage.getItem('adminAuthToken'));
-	// const userTokenRef = useRef(hasUserToken);
-	// const adminTokenRef = useRef(hasAdminToken);
+function GuestRoute({ children, redirectTo }) {
+	const { isAuthenticated } = useAuth();
+	return isAuthenticated ? <Navigate to={redirectTo} replace /> : children;
+}
 
-	// useEffect(() => {
-	// 	const checkTokens = () => {
-	// 		const userToken = !!sessionStorage.getItem('authToken');
-	// 		const adminToken = !!sessionStorage.getItem('adminAuthToken');
-	// 		if (userToken !== userTokenRef.current) {
-	// 			userTokenRef.current = userToken;
-	// 			setHasUserToken(userToken);
-	// 		}
-	// 		if (adminToken !== adminTokenRef.current) {
-	// 			adminTokenRef.current = adminToken;
-	// 			setHasAdminToken(adminToken);
-	// 		}
-	// 	};
-	// 	window.addEventListener('storage', checkTokens);
-	// 	return () => {
-	// 		window.removeEventListener('storage', checkTokens);
-	// 	};
-	// }, []);
+export default function AppRoutes() {
+	const { isAuthenticated: isUserAuthenticated } = useAuth();
+	const isAdminAuthenticated = Boolean(sessionStorage.getItem('adminAuthToken'));
 
 	// 🔐 NOT LOGGED IN
-	if (sessionStorage.getItem('adminAuthToken') === null && sessionStorage.getItem('authToken') === null) {
+	if (!isAdminAuthenticated && !isUserAuthenticated) {
 		return (
 			<Routes >
 				<Route path="/login" element={<Login />} />
 				<Route path="/register" element={<Register />} />
 				<Route path="/admin/login" element={<AdminLogin />} />
 				<Route path="/admin/register" element={<AdminRegister />} />
-				<Route path="*" element={location.pathname === "/login" ? <Login /> : <Navigate to="/login" replace />} />
+				<Route path="*" element={<Navigate to="/login" replace />} />
 			</Routes>
 		);
 	}
 
 	// 🛠 ADMIN
-	if (sessionStorage.getItem('adminAuthToken')) {
+	if (isAdminAuthenticated) {
 		return (
 			<Routes>
 				<Route path="/admin/dashboard" element={<AdminDashboard />} />
-				<Route path="/admin/login" element={<AdminLogin />} />
-				<Route path="/admin/register" element={<AdminRegister />} />
-				<Route path="*" element={location.pathname === "/admin/dashboard" ? <AdminDashboard /> : <Navigate to="/admin/dashboard" replace />} />
+				<Route path="/admin/login" element={<Navigate to="/admin/dashboard" replace />} />
+				<Route path="/admin/register" element={<Navigate to="/admin/dashboard" replace />} />
+				<Route path="/" element={<Navigate to="/admin/dashboard" replace />} />
+				<Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
 			</Routes>
 		);
 	}
@@ -69,15 +52,23 @@ export default function AppRoutes() {
 	// 👤 USER
 	return (
 		<Routes>
-            <Route path='/home' element={<Home />} />
+			<Route path='/home' element={<Home />} />
 			<Route path="/" element={<Home />} />
 			<Route path="/profile" element={
 				<ProtectedRoute>
 					<Profile />
 				</ProtectedRoute>
 			} />
-			<Route path="/login" element={<Login />} />
-			<Route path="/register" element={<Register />} />
+			<Route path="/login" element={
+				<GuestRoute redirectTo="/home">
+					<Login />
+				</GuestRoute>
+			} />
+			<Route path="/register" element={
+				<GuestRoute redirectTo="/home">
+					<Register />
+				</GuestRoute>
+			} />
 			<Route path="/admin/login" element={<AdminLogin />} />
 			<Route path="/admin/register" element={<AdminRegister />} />
 			<Route path="*" element={<NotFound />} />

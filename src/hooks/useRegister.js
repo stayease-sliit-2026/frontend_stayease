@@ -6,7 +6,7 @@ export default function useRegister() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const registerRequest = async (name, email, password, mobile) => {
+  const registerRequest = async (name, email, password) => {
     setLoading(true);
     setError('');
     try {
@@ -14,7 +14,6 @@ export default function useRegister() {
       const response = await api.post(AppUrl.APP_URL_MAIN+AppUrl.REGISTER_URL, {
         name,
         email,
-        mobile,
         password,
       });
       setLoading(false);
@@ -32,28 +31,5 @@ export default function useRegister() {
     }
   };
 
-  // Admin registration
-  const adminRegisterRequest = async (name, email, mobile, password) => {
-    setLoading(true);
-    setError('');
-    try {
-      const response = await api.post(AppUrl.APP_URL_MAIN+AppUrl.REGISTER_URL, {
-        name,
-        email,
-        mobile,
-        password,
-      });
-      setLoading(false);
-      console.log('Admin registration successful:', response.status);
-      return response.status;
-    } catch (err) {
-      setLoading(false);
-      setError(
-        err.response?.data?.message || 'Admin registration failed. Please try again.'
-      );
-      return err.response?.data || null;
-    }
-  };
-
-  return { registerRequest, adminRegisterRequest, loading, error, setError };
+  return { registerRequest, loading, error, setError };
 }
