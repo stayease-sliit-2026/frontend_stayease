@@ -9,6 +9,7 @@ import ImageConstant from '../../utils/imageConstant';
 export default function Register() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [mobile, setMobile] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const { login, isAuthenticated } = useAuth();
@@ -18,15 +19,20 @@ export default function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    if (!name.trim() || !email.trim() || !password.trim()) {
-      setError('Name, email and password required');
+    if (!name.trim() || !email.trim() || !mobile.trim() || !password.trim()) {
+      setError('Name, email, mobile, and password required');
+      return;
+    }
+    // Simple mobile validation (10-15 digits)
+    if (!/^\d{10,15}$/.test(mobile.trim())) {
+      setError('Enter a valid mobile number (10-15 digits).');
       return;
     }
     if (password !== confirm) {
       setError('Passwords do not match');
       return;
     }
-    const result = await registerRequest(name, email, password);
+    const result = await registerRequest(name, email, password, mobile);
     if (result) {
       login(email);
       navigate('/', { replace: true });
@@ -98,9 +104,9 @@ export default function Register() {
         minWidth: 0,
       }}>
         <div style={{ maxWidth: 420, width: '100%' }}>
-          <div style={{ fontWeight: 800, fontSize: '1.2rem', color: '#fff', letterSpacing: '1px', marginBottom: 18 }}>STAYEASE</div>
-          <h1 style={{ color: '#fff', fontWeight: 800, fontSize: '2.2rem', margin: 0, lineHeight: 1.15 }}>Create your account</h1>
-          <div style={{ color: '#e0e7ff', margin: '18px 0 28px', fontSize: '1.1rem' }}>Register to start booking your stay.</div>
+          <div style={{ fontWeight: 800, fontSize: '1.2rem', color: '#fff', letterSpacing: '1px', marginBottom: 5 }}>STAYEASE</div>
+          <h1 style={{ color: '#fff', fontWeight: 800, fontSize: '2.2rem', margin: 0, }}>Create your account</h1>
+          <div style={{ color: '#e0e7ff', margin: '5px 0 28px', fontSize: '1.1rem' }}>Register to start booking your stay.</div>
           <form onSubmit={handleSubmit} style={{ width: '100%' }}>
             {error && <div style={{ color: '#b91c1c', marginBottom: 12, fontWeight: 600 }}>{error}</div>}
             <input
@@ -111,11 +117,11 @@ export default function Register() {
               required
               style={{
                 width: '100%',
-                padding: '14px',
+                padding: '10px',
                 marginBottom: 18,
                 border: 'none',
                 borderRadius: 8,
-                fontSize: '1.08rem',
+                fontSize: '1.00rem',
                 background: '#f3f6fd',
                 color: '#222',
                 boxShadow: '0 1px 4px rgba(37,99,235,0.07)',
@@ -129,11 +135,29 @@ export default function Register() {
               required
               style={{
                 width: '100%',
-                padding: '14px',
+                padding: '10px',
                 marginBottom: 18,
                 border: 'none',
                 borderRadius: 8,
-                fontSize: '1.08rem',
+                fontSize: '1.00rem',
+                background: '#f3f6fd',
+                color: '#222',
+                boxShadow: '0 1px 4px rgba(37,99,235,0.07)',
+              }}
+            />
+            <input
+              type="tel"
+              placeholder="Mobile Number"
+              value={mobile}
+              onChange={e => setMobile(e.target.value)}
+              required
+              style={{
+                width: '100%',
+                padding: '10px',
+                marginBottom: 18,
+                border: 'none',
+                borderRadius: 8,
+                fontSize: '1.00rem',
                 background: '#f3f6fd',
                 color: '#222',
                 boxShadow: '0 1px 4px rgba(37,99,235,0.07)',
@@ -147,11 +171,11 @@ export default function Register() {
               required
               style={{
                 width: '100%',
-                padding: '14px',
+                padding: '10px',
                 marginBottom: 10,
                 border: 'none',
                 borderRadius: 8,
-                fontSize: '1.08rem',
+                fontSize: '1.00rem',
                 background: '#f3f6fd',
                 color: '#222',
                 boxShadow: '0 1px 4px rgba(37,99,235,0.07)',
@@ -165,11 +189,11 @@ export default function Register() {
               required
               style={{
                 width: '100%',
-                padding: '14px',
+                padding: '10px',
                 marginBottom: 20,
                 border: 'none',
                 borderRadius: 8,
-                fontSize: '1.08rem',
+                fontSize: '1.00rem',
                 background: '#f3f6fd',
                 color: '#222',
                 boxShadow: '0 1px 4px rgba(37,99,235,0.07)',

@@ -13,8 +13,10 @@ const api = axios.create({
 
 function getAuthToken() {
   return (
+    sessionStorage.getItem('adminAuthToken') ||
     sessionStorage.getItem('authToken') ||
     localStorage.getItem('authToken') ||
+    localStorage.getItem('adminAuthToken') ||
     localStorage.getItem('token') ||
     ''
   ).trim()

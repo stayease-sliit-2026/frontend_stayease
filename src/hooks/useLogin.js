@@ -15,8 +15,7 @@ export default function useLogin() {
       if (response.data && response.data.token) {
         sessionStorage.setItem('authToken', response.data.token);
       }
-      console.log('Login successful:', response.data);
-      return response.data;
+      return response;
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed. Please try again.');
       setLoading(false);
@@ -24,5 +23,31 @@ export default function useLogin() {
     }
   };
 
-  return { loginRequest, loading, error, setError };
+  const handleAdminLogin = async (email, password) => {
+    setLoading(true);
+    setError('');
+    try {
+      console.log('url for admin login:', AppUrl.APP_URL_MAIN + AppUrl.LOGIN_URL);
+      const response = await api.post(AppUrl.APP_URL_MAIN + AppUrl.LOGIN_URL, { email, password });
+      console.log('Admin login response:', response);
+      setLoading(false);  
+      if (response.data && response.data.token) {
+        sessionStorage.setItem('adminAuthToken', response.data.token);
+      }
+      return response;
+    } catch (err) {
+      console.error('Admin login error:', err);
+      setError(err.response?.data?.message || 'Admin login failed. Please try again.');
+      setLoading(false);
+      return null;
+    }
+  };
+
+  const logout = () => {
+    sessionStorage.removeItem('authToken');
+    sessionStorage.removeItem('adminAuthToken');
+    window.location.href = '/admin/login';
+  }
+
+  return { loginRequest, handleAdminLogin, loading, error, setError };
 }
