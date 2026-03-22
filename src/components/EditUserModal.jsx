@@ -5,9 +5,9 @@ import '../styles/UserModal.css';
 export default function EditUserModal({ user, onClose, onSaved }) {
   const [form, setForm] = useState({
     name: user.name || '',
-    phone: user.phone || '',
+    phone: user.phone || user.mobile || '',
     address: user.address || '',
-    role: user.role || 'user',
+    role: user.role === 'guest' ? 'user' : (user.role || 'user'),
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -31,55 +31,69 @@ export default function EditUserModal({ user, onClose, onSaved }) {
   };
 
   return (
-    <div className="modal-overlay">
-      <div className="modal-box">
-        <h2>Edit User</h2>
-        <form onSubmit={handleSubmit} className="modal-form">
-          <label>
-            Name
-            <input
-              type="text"
-              name="name"
-              value={form.name}
-              onChange={handleChange}
-              required
-            />
-          </label>
-          <label>
-            Phone
-            <input
-              type="text"
-              name="phone"
-              value={form.phone}
-              onChange={handleChange}
-            />
-          </label>
-          <label>
-            Address
-            <input
-              type="text"
-              name="address"
-              value={form.address}
-              onChange={handleChange}
-            />
-          </label>
-          <label>
-            Role
-            <select
-              name="role"
-              value={form.role}
-              onChange={handleChange}
-              required
-            >
-              <option value="user">User</option>
-              <option value="admin">Admin</option>
-            </select>
-          </label>
-          {error && <div className="modal-error">{error}</div>}
-          <div className="modal-actions">
+    <div className="modal-overlay modal-sheet-overlay" onClick={onClose}>
+      <div
+        className="modal-sheet-left user-modal-pro-box"
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="user-modal-pro-header">
+          <div className="user-modal-pro-avatar">
+            {form.name ? form.name[0].toUpperCase() : 'U'}
+          </div>
+          <div>
+            <h2>Edit User</h2>
+            <div className="user-modal-pro-email">{user.email}</div>
+          </div>
+        </div>
+        <form onSubmit={handleSubmit} className="user-modal-pro-form">
+          <div className="user-modal-pro-fields">
+            <label>
+              Name
+              <input
+                type="text"
+                name="name"
+                value={form.name}
+                onChange={handleChange}
+                required
+              />
+            </label>
+            <label>
+              Phone
+              <input
+                type="text"
+                name="phone"
+                value={form.phone}
+                onChange={handleChange}
+              />
+            </label>
+            <label>
+              Address
+              <input
+                type="text"
+                name="address"
+                value={form.address}
+                onChange={handleChange}
+              />
+            </label>
+            <label>
+              Role
+              <select
+                name="role"
+                value={form.role}
+                onChange={handleChange}
+                required
+              >
+                <option value="user">Admin</option>
+                <option value="admin">Employee</option>
+                <option value="guest">User</option>
+              </select>
+            </label>
+          </div>
+          {error && <div className="user-modal-pro-error">{error}</div>}
+          <div className="user-modal-pro-actions">
             <button
               type="button"
-              className="modal-btn cancel"
+              className="user-modal-pro-btn cancel"
               onClick={onClose}
               disabled={saving}
             >
@@ -87,7 +101,7 @@ export default function EditUserModal({ user, onClose, onSaved }) {
             </button>
             <button
               type="submit"
-              className="modal-btn save"
+              className="user-modal-pro-btn save"
               disabled={saving}
             >
               {saving ? 'Saving...' : 'Save'}

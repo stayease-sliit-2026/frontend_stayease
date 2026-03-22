@@ -8,41 +8,52 @@ export default function UserTable({ users, onRefresh }) {
   const [deleteUser, setDeleteUser] = useState(null);
 
   return (
-    <div className="user-table-wrapper">
-      <table className="user-table">
+    <div className="user-table-pro-wrapper">
+      <table className="user-table-pro">
         <thead>
           <tr>
-            <th>Name</th>
+            <th>User</th>
             <th>Email</th>
             <th>Phone</th>
             <th>Role</th>
-            <th className="user-table-actions">Actions</th>
+            <th className="user-table-pro-actions">Actions</th>
           </tr>
         </thead>
         <tbody>
           {users.length === 0 && (
             <tr>
-              <td colSpan={5} className="user-table-empty">No users found.</td>
+              <td colSpan={5} className="user-table-pro-empty">No users found.</td>
             </tr>
           )}
           {users.map((user) => (
             <tr key={user._id || user.id}>
-              <td>{user.name}</td>
+              <td className="user-table-pro-usercell">
+                <div className="user-table-pro-avatar">
+                  {user.name ? user.name[0].toUpperCase() : 'U'}
+                </div>
+                <div className="user-table-pro-username">{user.name}</div>
+              </td>
               <td>{user.email}</td>
-              <td>{user.phone}</td>
-              <td>{user.role}</td>
-              <td className="user-table-actions">
+              <td>{user.phone || user.mobile || '-'}</td>
+              <td>
+                <span className={`user-table-pro-role user-table-pro-role-${user.role === 'guest' ? 'user' : user.role}`}>
+                  {user.role === 'guest' ? 'user' : user.role}
+                </span>
+              </td>
+              <td className="user-table-pro-actions">
                 <button
-                  className="user-table-btn edit"
+                  className="user-table-pro-btn edit"
                   onClick={() => setEditUser(user)}
+                  title="Edit user"
                 >
-                  Edit
+                  <span className="user-table-pro-btn-icon">✏️</span> Edit
                 </button>
                 <button
-                  className="user-table-btn delete"
+                  className="user-table-pro-btn delete"
                   onClick={() => setDeleteUser(user)}
+                  title="Delete user"
                 >
-                  Delete
+                  <span className="user-table-pro-btn-icon">🗑️</span> Delete
                 </button>
               </td>
             </tr>
