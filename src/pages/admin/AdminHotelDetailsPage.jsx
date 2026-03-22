@@ -35,7 +35,6 @@ function AdminHotelDetailsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
-  const [authPopupMessage, setAuthPopupMessage] = useState('')
 
   const [showHotelForm, setShowHotelForm] = useState(false)
   const [showRoomForm, setShowRoomForm] = useState(false)
@@ -44,23 +43,8 @@ function AdminHotelDetailsPage() {
   const [deletingRoom, setDeletingRoom] = useState(null)
   const [selectedGalleryImage, setSelectedGalleryImage] = useState('')
 
-  function isAdminValidationError(msg = '') {
-    const text = msg.toLowerCase()
-    return (
-      text.includes('admin access required') ||
-      text.includes('missing or invalid authorization header') ||
-      text.includes('token verification failed') ||
-      text.includes('invalid token')
-    )
-  }
-
   function handlePageError(err) {
     const msg = err?.message || 'Request failed'
-    if (isAdminValidationError(msg)) {
-      setError('')
-      setAuthPopupMessage(msg)
-      return
-    }
     setError(msg)
   }
 
@@ -762,29 +746,6 @@ function AdminHotelDetailsPage() {
       )}
 
       {/* Admin auth error modal */}
-      {authPopupMessage && (
-        <div
-          className="fixed inset-0 z-[1000] flex items-start justify-center bg-slate-900/50 p-4 pt-24 md:items-center md:pt-8"
-          onClick={() => setAuthPopupMessage('')}
-        >
-          <div
-            className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <h3 className="text-lg font-semibold text-rose-700">Admin Validation Failed</h3>
-            <p className="mt-2 text-sm text-slate-600">{authPopupMessage}</p>
-            <div className="mt-5 flex justify-end">
-              <button
-                type="button"
-                onClick={() => setAuthPopupMessage('')}
-                className="rounded-lg bg-[#0a2342] px-4 py-2 text-sm font-medium text-white hover:bg-[#1e3a5c]"
-              >
-                OK
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </section>
   )
 }

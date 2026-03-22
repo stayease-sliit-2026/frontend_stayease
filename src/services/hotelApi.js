@@ -4,16 +4,35 @@ const BASE_URL =
   import.meta.env.VITE_HOTEL_SERVICE_URL ||
   import.meta.env.VITE_API_GATEWAY_URL ||
   import.meta.env.VITE_API_BASE_URL ||
-  ''
+  'http://localhost:3002'
 
 const api = axios.create({
   baseURL: BASE_URL,
   timeout: 10000,
 })
 
+function getAuthToken() {
+  return (
+    sessionStorage.getItem('authToken') ||
+    localStorage.getItem('authToken') ||
+    localStorage.getItem('token') ||
+    ''
+  ).trim()
+}
+
+function getAdminAuthHeaders() {
+  const token = getAuthToken()
+  if (!token) {
+    throw new Error('Missing or invalid Authorization header')
+  }
+  return {
+    Authorization: `Bearer ${token}`,
+  }
+}
+
 // Attach stored JWT token to every request when available
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token')
+  const token = getAuthToken()
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
@@ -53,7 +72,11 @@ export async function listHotelRooms(hotelId) {
 
 export async function createHotel(payload) {
   try {
-    const response = await api.post('/hotels', payload)
+    const headers = getAdminAuthHeaders();
+    console.log('Admin createHotel: token', headers.Authorization);
+    const response = await api.post('/hotels', payload, {
+      headers,
+    })
     return response.data
   } catch (error) {
     throw new Error(getErrorMessage(error))
@@ -62,7 +85,11 @@ export async function createHotel(payload) {
 
 export async function updateHotel(hotelId, payload) {
   try {
-    const response = await api.put(`/hotels/${hotelId}`, payload)
+    const headers = getAdminAuthHeaders();
+    console.log('Admin updateHotel: token', headers.Authorization);
+    const response = await api.put(`/hotels/${hotelId}`, payload, {
+      headers,
+    })
     return response.data
   } catch (error) {
     throw new Error(getErrorMessage(error))
@@ -71,7 +98,11 @@ export async function updateHotel(hotelId, payload) {
 
 export async function deleteHotel(hotelId) {
   try {
-    const response = await api.delete(`/hotels/${hotelId}`)
+    const headers = getAdminAuthHeaders();
+    console.log('Admin deleteHotel: token', headers.Authorization);
+    const response = await api.delete(`/hotels/${hotelId}`, {
+      headers,
+    })
     return response.data
   } catch (error) {
     throw new Error(getErrorMessage(error))
@@ -80,7 +111,11 @@ export async function deleteHotel(hotelId) {
 
 export async function addRoomToHotel(hotelId, payload) {
   try {
-    const response = await api.post(`/hotels/${hotelId}/rooms`, payload)
+    const headers = getAdminAuthHeaders();
+    console.log('Admin addRoomToHotel: token', headers.Authorization);
+    const response = await api.post(`/hotels/${hotelId}/rooms`, payload, {
+      headers,
+    })
     return response.data
   } catch (error) {
     throw new Error(getErrorMessage(error))
@@ -89,7 +124,11 @@ export async function addRoomToHotel(hotelId, payload) {
 
 export async function updateRoom(hotelId, roomId, payload) {
   try {
-    const response = await api.put(`/hotels/${hotelId}/rooms/${roomId}`, payload)
+    const headers = getAdminAuthHeaders();
+    console.log('Admin updateRoom: token', headers.Authorization);
+    const response = await api.put(`/hotels/${hotelId}/rooms/${roomId}`, payload, {
+      headers,
+    })
     return response.data
   } catch (error) {
     throw new Error(getErrorMessage(error))
@@ -98,7 +137,11 @@ export async function updateRoom(hotelId, roomId, payload) {
 
 export async function deleteRoom(hotelId, roomId) {
   try {
-    const response = await api.delete(`/hotels/${hotelId}/rooms/${roomId}`)
+    const headers = getAdminAuthHeaders();
+    console.log('Admin deleteRoom: token', headers.Authorization);
+    const response = await api.delete(`/hotels/${hotelId}/rooms/${roomId}`, {
+      headers,
+    })
     return response.data
   } catch (error) {
     throw new Error(getErrorMessage(error))

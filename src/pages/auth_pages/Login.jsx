@@ -1,5 +1,6 @@
 import ImageConstant from '../../utils/imageConstant';
 import useLogin from '../../hooks/useLogin';
+import { jwtDecode } from 'jwt-decode';
 import React, { useState } from 'react';
 import { useNavigate, Navigate, Link } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
@@ -19,9 +20,21 @@ function Login() {
             return;
         }
         const result = await loginRequest(email, password);
-        if (result) {
+        if (result && result.token) {
+            let isAdmin = false;
+            try {
+                const decoded = jwtDecode(result.token);
+                // Adjust this according to your backend's JWT payload structure
+                isAdmin = decoded.role === 'admin' || (decoded.roles && decoded.roles.includes('admin'));
+            } catch (e) {
+                // fallback: not admin
+            }
             login(email); // Optionally pass result if your login expects it
-            navigate('/', { replace: true });
+            if (isAdmin) {
+                navigate('/hotel-admin', { replace: true });
+            } else {
+                navigate('/', { replace: true });
+            }
         }
         // error is handled by the hook
     };
