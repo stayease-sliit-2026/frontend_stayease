@@ -1,10 +1,10 @@
 import axios from 'axios'
 
 const BASE_URL =
-  import.meta.env.VITE_HOTEL_SERVICE_URL ||
-  import.meta.env.VITE_API_GATEWAY_URL ||
-  import.meta.env.VITE_API_BASE_URL ||
-  'http://localhost:3002'
+  // import.meta.env.VITE_HOTEL_SERVICE_URL ||
+  // import.meta.env.VITE_API_GATEWAY_URL ||
+  // import.meta.env.VITE_API_BASE_URL ||
+  'https://ctse-gateway-555972249634.asia-south1.run.app/hotels'
 
 const api = axios.create({
   baseURL: BASE_URL,

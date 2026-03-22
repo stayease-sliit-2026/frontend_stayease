@@ -3,7 +3,7 @@ import AppUrl from '../utils/AppUrl';
 import api from '../services/api';
 
 function buildAuthUrl(path) {
-  const base = (import.meta.env.VITE_AUTH_SERVICE_URL || AppUrl.APP_URL_MAIN || '').replace(/\/$/, '');
+  const base = (AppUrl.APP_URL_MAIN || '').replace(/\/$/, '');
   const normalizedPath = `/${String(path || '').replace(/^\/+/, '')}`;
   return base ? `${base}${normalizedPath}` : normalizedPath;
 }
@@ -16,6 +16,7 @@ export default function useLogin() {
     setLoading(true);
     setError('');
     try {
+      console.log('Attempting login with:', { email, password, url: buildAuthUrl(AppUrl.LOGIN_URL) });
       const response = await api.post(buildAuthUrl(AppUrl.LOGIN_URL), { email, password });
       setLoading(false);
       if (response.data && response.data.token) {

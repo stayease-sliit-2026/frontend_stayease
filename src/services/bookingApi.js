@@ -1,9 +1,7 @@
 import axios from 'axios'
 
 const BOOKING_BASE_URL =
-  import.meta.env.VITE_BOOKING_SERVICE_BASE_URL ||
-  import.meta.env.VITE_API_BASE_URL ||
-  'http://localhost:3003'
+  'https://stayease-user--0000001.ambitiousforest-4a1ef578.southeastasia.azurecontainerapps.io'
 
 const bookingApi = axios.create({
   baseURL: BOOKING_BASE_URL,
@@ -115,6 +113,8 @@ export async function getBookingById(bookingId) {
 
 export async function getUserBookings(params = {}) {
   try {
+    console.log('for getUserBookings:', bookingApi.defaults.baseURL + '/bookings/user/');
+    console.log('params for getUserBookings:', params);
     const response = await bookingApi.get('/bookings/user/', { params })
     return response.data
   } catch (error) {
