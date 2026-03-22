@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import AdminUsersPage from '../../pages/admin_pages/userManagment/AdminUsersPage';
 import '../../styles/admin-dashboard.css';
 
 const STATS = [
@@ -33,6 +34,7 @@ const SYSTEMS = [
 
 export default function AdminDashboard() {
   const [admin, setAdmin] = useState(null);
+  const [selectedSection, setSelectedSection] = useState('Dashboard');
 
   // Logout handler
     const handleLogout = () => {
@@ -62,7 +64,6 @@ export default function AdminDashboard() {
   return (
     <>
       <div className="dashboard-root">
-
         {/* Sidebar */}
         <aside className="sidebar">
           <div className="sidebar-logo">
@@ -73,12 +74,16 @@ export default function AdminDashboard() {
           <div className="sidebar-section-label">Main</div>
           <nav className="sidebar-nav">
             {[
-              { icon: '⊞', label: 'Dashboard', active: true },
+              { icon: '⊞', label: 'Dashboard' },
               { icon: '👥', label: 'Users' },
               { icon: '🏨', label: 'Hotels' },
               { icon: '📋', label: 'Bookings' },
             ].map(item => (
-              <button key={item.label} className={`nav-item${item.active ? ' active' : ''}`}>
+              <button
+                key={item.label}
+                className={`nav-item${selectedSection === item.label ? ' active' : ''}`}
+                onClick={() => setSelectedSection(item.label)}
+              >
                 <span className="nav-icon">{item.icon}</span>
                 {item.label}
               </button>
@@ -128,7 +133,7 @@ export default function AdminDashboard() {
         {/* Main */}
         <main className="main-content">
           <header className="topbar">
-            <span className="topbar-title">Dashboard</span>
+            <span className="topbar-title">{selectedSection}</span>
             <div className="topbar-right">
               <button className="topbar-badge">
                 🔔
@@ -143,79 +148,88 @@ export default function AdminDashboard() {
           </header>
 
           <div className="page-body">
+            {selectedSection === 'Dashboard' && (
+              <>
+                {/* Welcome Banner */}
+                <div className="welcome-banner animate-in">
+                  <div className="welcome-text">
+                    <h2>Welcome back, {displayName} </h2>
+                    <p>Here's what's happening across your platform today.</p>
+                  </div>
+                  {admin && (
+                    <div className="welcome-meta">
+                      <span className="meta-pill">{admin.role || 'admin'}</span>
+                      <span className="meta-id">ID: {admin.id || 'N/A'}</span>
+                    </div>
+                  )}
+                </div>
 
-            {/* Welcome Banner */}
-            <div className="welcome-banner animate-in">
-              <div className="welcome-text">
-                <h2>Welcome back, {displayName} </h2>
-                <p>Here's what's happening across your platform today.</p>
+                {/* Stats */}
+                <div className="stats-grid">
+                  {STATS.map((s, i) => (
+                    <div key={s.label} className={`stat-card animate-in delay-${i + 1}`}>
+                      <div className="stat-icon" style={{ background: s.iconBg, color: s.iconColor }}>{s.icon}</div>
+                      <div className="stat-value">{s.value}</div>
+                      <div className="stat-label">{s.label}</div>
+                      <div className={`stat-change ${s.dir}`}>
+                        {s.dir === 'up' ? '↑' : '↓'} {s.change} this month
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Quick Actions */}
+                <div className="section-title animate-in delay-5">Quick Actions</div>
+                <div className="actions-grid">
+                  {ACTIONS.map((a, i) => (
+                    <button key={a.label} className={`action-card animate-in delay-${i + 1}`}>
+                      <div className="action-icon" style={{ background: a.iconBg, color: a.iconColor }}>{a.icon}</div>
+                      <div>
+                        <div className="action-label">{a.label}</div>
+                        <div className="action-desc">{a.desc}</div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Bottom panels */}
+                <div className="bottom-grid">
+                  <div className="panel animate-in delay-3">
+                    <div className="panel-header">
+                      <div className="section-title" style={{ margin: 0 }}>Recent Activity</div>
+                      <button className="panel-action">View all</button>
+                    </div>
+                    {ACTIVITY.map((a, i) => (
+                      <div key={i} className="activity-item">
+                        <div className="activity-dot" style={{ background: a.color }} />
+                        <div className="activity-text">{a.text}</div>
+                        <div className="activity-time">{a.time}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="panel animate-in delay-4">
+                    <div className="panel-header">
+                      <div className="section-title" style={{ margin: 0 }}>System Status</div>
+                      <button className="panel-action">Details</button>
+                    </div>
+                    {SYSTEMS.map((s, i) => (
+                      <div key={i} className="status-row">
+                        <span className="status-name">{s.name}</span>
+                        <span className={`status-pill ${s.cls}`}>{s.status}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+            {selectedSection === 'Users' && (
+              <div style={{ padding: 0, background: 'none' }}>
+                {/* Render the full Admin User Management UI */}
+                <AdminUsersPage />
               </div>
-              {admin && (
-                <div className="welcome-meta">
-                  <span className="meta-pill">{admin.role || 'admin'}</span>
-                  <span className="meta-id">ID: {admin.id || 'N/A'}</span>
-                </div>
-              )}
-            </div>
-
-            {/* Stats */}
-            <div className="stats-grid">
-              {STATS.map((s, i) => (
-                <div key={s.label} className={`stat-card animate-in delay-${i + 1}`}>
-                  <div className="stat-icon" style={{ background: s.iconBg, color: s.iconColor }}>{s.icon}</div>
-                  <div className="stat-value">{s.value}</div>
-                  <div className="stat-label">{s.label}</div>
-                  <div className={`stat-change ${s.dir}`}>
-                    {s.dir === 'up' ? '↑' : '↓'} {s.change} this month
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Quick Actions */}
-            <div className="section-title animate-in delay-5">Quick Actions</div>
-            <div className="actions-grid">
-              {ACTIONS.map((a, i) => (
-                <button key={a.label} className={`action-card animate-in delay-${i + 1}`}>
-                  <div className="action-icon" style={{ background: a.iconBg, color: a.iconColor }}>{a.icon}</div>
-                  <div>
-                    <div className="action-label">{a.label}</div>
-                    <div className="action-desc">{a.desc}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            {/* Bottom panels */}
-            <div className="bottom-grid">
-              <div className="panel animate-in delay-3">
-                <div className="panel-header">
-                  <div className="section-title" style={{ margin: 0 }}>Recent Activity</div>
-                  <button className="panel-action">View all</button>
-                </div>
-                {ACTIVITY.map((a, i) => (
-                  <div key={i} className="activity-item">
-                    <div className="activity-dot" style={{ background: a.color }} />
-                    <div className="activity-text">{a.text}</div>
-                    <div className="activity-time">{a.time}</div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="panel animate-in delay-4">
-                <div className="panel-header">
-                  <div className="section-title" style={{ margin: 0 }}>System Status</div>
-                  <button className="panel-action">Details</button>
-                </div>
-                {SYSTEMS.map((s, i) => (
-                  <div key={i} className="status-row">
-                    <span className="status-name">{s.name}</span>
-                    <span className={`status-pill ${s.cls}`}>{s.status}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
+            )}
+            {/* Add more sections as needed */}
           </div>
         </main>
       </div>
