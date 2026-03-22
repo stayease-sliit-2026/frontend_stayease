@@ -55,10 +55,10 @@ export default function AdminRegister() {
           <span className="logo-text">HotelAdmin</span>
         </div>
         <div className="left-body">
-          <div className="left-eyebrow">Admin Registration</div>
+          <div className="left-eyebrow">Employee Registration</div>
           <h1 className="left-headline">
-            Create your<br />
-            admin account
+            Create <br />
+            Employee Account
           </h1>
           <p className="left-desc">
             Register to manage your hotel platform with full control and security.
@@ -70,10 +70,10 @@ export default function AdminRegister() {
       </div>
       <div className="login-right">
         <div className="login-card">
-          <div className="card-eyebrow">Admin Registration</div>
+          <div className="card-eyebrow">Employee Registration</div>
           <h2 className="card-title">Sign Up</h2>
           <p className="card-subtitle">
-            Fill in your details to create an admin account.
+            Fill in your details to create an employee account.
           </p>
           {error && (
             <div className="error-box">
@@ -193,9 +193,9 @@ export default function AdminRegister() {
             </div>
           </div>
           <div style={{ marginTop: 18, textAlign: 'center', fontSize: '1.01rem' }}>
-            <Link to="/admin/login" style={{ color: '#2563eb', fontWeight: 600, textDecoration: 'underline' }}>
+            {/* <Link to="/admin/login" style={{ color: '#2563eb', fontWeight: 600, textDecoration: 'underline' }}>
               Back to Admin Login
-            </Link>
+            </Link> */}
           </div>
         </div>
       </div>

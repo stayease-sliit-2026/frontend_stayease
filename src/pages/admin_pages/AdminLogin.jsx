@@ -164,9 +164,9 @@ export default function AdminLogin() {
               <Link to="/login" style={{ color: '#bcbcbd', fontWeight: 300, textDecoration: 'underline', marginRight: 16 }}>
                 User Login
               </Link>
-              <Link to="/admin/register" style={{ color: '#2563eb', fontWeight: 600, textDecoration: 'underline' }}>
+              {/* <Link to="/admin/register" style={{ color: '#2563eb', fontWeight: 600, textDecoration: 'underline' }}>
                 Register Admin
-              </Link>
+              </Link> */}
             </div>
 
             <div className="divider">

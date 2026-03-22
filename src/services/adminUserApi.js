@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:3005',
+  baseURL: 'http://localhost:8080/users',
 });
 
 api.interceptors.request.use(
@@ -9,6 +9,7 @@ api.interceptors.request.use(
     // Use adminAuthToken for admin endpoints, fallback to user token otherwise
     const adminToken = sessionStorage.getItem('adminAuthToken');
     const userToken = localStorage.getItem('token');
+    console.log('full url for request:', api.defaults.baseURL + config.url);
     if (config.url && config.url.startsWith('/api/users/admin')) {
       if (adminToken) {
         config.headers.Authorization = `Bearer ${adminToken}`;
@@ -17,7 +18,7 @@ api.interceptors.request.use(
       config.headers.Authorization = `Bearer ${userToken}`;
     }
     console.log('Request config:', config);
-    
+
     return config;
   },
   (error) => Promise.reject(error)

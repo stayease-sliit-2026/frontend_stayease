@@ -27,6 +27,7 @@ export default function useLogin() {
     setLoading(true);
     setError('');
     try {
+      console.log('url for admin login:', AppUrl.APP_URL_MAIN + AppUrl.LOGIN_URL);
       const response = await api.post(AppUrl.APP_URL_MAIN + AppUrl.LOGIN_URL, { email, password });
       console.log('Admin login response:', response);
       setLoading(false);  
