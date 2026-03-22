@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
+import useLogin  from '../../hooks/useLogin';
+import AppRoutes from '../../routes/AppRoutes';
 
 const navLinks = [
 	{ to: '/', label: 'Home' },
@@ -13,6 +15,22 @@ const navLinks = [
 
 export default function Navbar() {
 	const { user, logout } = useAuth();
+
+	// Remove session tokens on logout
+	const handleLogout = () => {     
+		try{
+			if(sessionStorage.getItem('authToken')) {
+				sessionStorage.removeItem('authToken');
+			}
+			if(sessionStorage.getItem('adminAuthToken')) {
+				sessionStorage.removeItem('adminAuthToken');
+			}
+			logout();
+			window.location.reload(); // Refresh the page after logout
+		}catch(err) {
+			console.error('Error during logout:', err);
+		}
+	};
 	const location = useLocation();
 	const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
 	const [menuOpen, setMenuOpen] = useState(false);
@@ -83,22 +101,37 @@ export default function Navbar() {
 							<Link key={link.to} to={link.to} style={{ color: '#fff', textDecoration: 'none', borderBottom: location.pathname === link.to ? '2px solid #4fd1c5' : 'none', paddingBottom: 2 }}>{link.label}</Link>
 						))}
 						{user && (
-							<button
-								type="button"
-								onClick={logout}
-								style={{
-									border: '1px solid #4fd1c5',
-									borderRadius: '8px',
-									padding: '8px 12px',
-									background: 'transparent',
-									color: '#fff',
-									cursor: 'pointer',
-									fontWeight: 600,
-									marginLeft: 12,
-								}}
-							>
-								Logout
-							</button>
+							<>
+								<Link
+									to="/profile"
+									style={{
+										color: '#fff',
+										textDecoration: 'none',
+										borderBottom: location.pathname === '/profile' ? '2px solid #4fd1c5' : 'none',
+										paddingBottom: 2,
+										marginLeft: 8,
+										fontWeight: 600,
+									}}
+								>
+									My Profile
+								</Link>
+								<button
+									type="button"
+									onClick={handleLogout}
+									style={{
+										border: '1px solid #4fd1c5',
+										borderRadius: '8px',
+										padding: '8px 12px',
+										background: 'transparent',
+										color: '#fff',
+										cursor: 'pointer',
+										fontWeight: 600,
+										marginLeft: 12,
+									}}
+									>
+										Logout
+									</button>
+							</>
 						)}
 					</nav>
 					{/* Hamburger for mobile */}
@@ -125,22 +158,40 @@ export default function Navbar() {
 								<Link key={link.to} to={link.to} style={{ color: '#fff', textDecoration: 'none', fontSize: '1.2rem', borderBottom: location.pathname === link.to ? '2px solid #4fd1c5' : 'none', paddingBottom: 2 }} onClick={() => setMenuOpen(false)}>{link.label}</Link>
 							))}
 							{user && (
-								<button
-									type="button"
-									onClick={() => { logout(); setMenuOpen(false); }}
-									style={{
-										border: '1px solid #4fd1c5',
-										borderRadius: '8px',
-										padding: '10px 18px',
-										background: 'transparent',
-										color: '#fff',
-										cursor: 'pointer',
-										fontWeight: 600,
-										marginTop: 12,
-									}}
-								>
-									Logout
-								</button>
+								<>
+									<Link
+										to="/profile"
+										style={{
+											color: '#fff',
+											textDecoration: 'none',
+											fontSize: '1.2rem',
+											borderBottom: location.pathname === '/profile' ? '2px solid #4fd1c5' : 'none',
+											paddingBottom: 2,
+											marginTop: 8,
+											fontWeight: 600,
+											display: 'block',
+										}}
+										onClick={() => setMenuOpen(false)}
+									>
+										My Profile
+									</Link>
+									<button
+										type="button"
+										onClick={() => { handleLogout(); setMenuOpen(false); }}
+										style={{
+											border: '1px solid #4fd1c5',
+											borderRadius: '8px',
+											padding: '10px 18px',
+											background: 'transparent',
+											color: '#fff',
+											cursor: 'pointer',
+											fontWeight: 600,
+											marginTop: 12,
+										}}
+										>
+											Logout
+										</button>
+								</>
 							)}
 						</nav>
 					)}

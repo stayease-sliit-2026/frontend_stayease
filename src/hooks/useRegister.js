@@ -21,6 +21,7 @@ export default function useRegister() {
       const response = await api.post(registerUrl, {
         name,
         email,
+        mobile,
         password,
         mobile,
       });
@@ -39,5 +40,37 @@ export default function useRegister() {
     }
   };
 
-  return { registerRequest, loading, error, setError };
+  // Admin registration
+  const adminRegisterRequest = async (name, email, mobile, password) => {
+    setLoading(true);
+    setError('');
+    try {
+      const adminToken = sessionStorage.getItem('adminAuthToken');
+      const response = await api.post(
+        AppUrl.APP_URL_USERS + AppUrl.ADMIN_REGISTER,
+        {
+          name,
+          email,
+          mobile,
+          password,
+        },
+        {
+          headers: {
+            Authorization: adminToken ? `Bearer ${adminToken}` : undefined,
+          },
+        }
+      );
+      setLoading(false);
+      console.log('Admin registration successful:', response.status);
+      return response.status;
+    } catch (err) {
+      setLoading(false);
+      setError(
+        err.response?.data?.message || 'Admin registration failed. Please try again.'
+      );
+      return err.response?.data || null;
+    }
+  };
+
+  return { registerRequest, adminRegisterRequest, loading, error, setError };
 }

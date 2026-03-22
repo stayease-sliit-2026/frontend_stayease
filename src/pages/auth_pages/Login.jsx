@@ -20,21 +20,10 @@ function Login() {
             return;
         }
         const result = await loginRequest(email, password);
-        if (result && result.token) {
-            let isAdmin = false;
-            try {
-                const decoded = jwtDecode(result.token);
-                // Adjust this according to your backend's JWT payload structure
-                isAdmin = decoded.role === 'admin' || (decoded.roles && decoded.roles.includes('admin'));
-            } catch (e) {
-                // fallback: not admin
-            }
-            login(email); // Optionally pass result if your login expects it
-            if (isAdmin) {
-                navigate('/hotel-admin', { replace: true });
-            } else {
-                navigate('/', { replace: true });
-            }
+        if (result && result.status === 200 && result.data && result.data.token) {
+            console.log(result);
+            login(email, result.data.token);
+            window.location.reload(); // Refresh the page after login
         }
         // error is handled by the hook
     };
@@ -147,6 +136,11 @@ function Login() {
                         <div style={{ marginTop: 22, textAlign: 'center', fontSize: '1.04rem', color: '#e0e7ff' }}>
                             Don't have an account?{' '}
                             <Link to="/register" style={{ color: '#fff', fontWeight: 700, textDecoration: 'underline' }}>Create your account</Link>
+                        </div>
+                        <div style={{ marginTop: 10, textAlign: 'center', fontSize: '1.01rem' }}>
+                            <Link to="/admin/login" style={{ color: '#cccccc', fontWeight: 400, textDecoration: 'underline' ,fontSize: '0.88rem'}}>
+                                Admin Login
+                            </Link>
                         </div>
                     </form>
                 </div>
