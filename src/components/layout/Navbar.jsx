@@ -6,7 +6,7 @@ const navLinks = [
 	{ to: '/', label: 'Home' },
 	{ to: '/hotel-service', label: 'Explore Hotels' },
 	{ to: '/booking-service/my-bookings', label: 'My Bookings' },
-	// { to: '/hotel-admin', label: 'Admin Dashboard' },
+	{ to: '/payments', label: 'Payments' },
 	{ to: '/register', label: 'Register' },
 	{ to: '/login', label: 'Login' },
 ];

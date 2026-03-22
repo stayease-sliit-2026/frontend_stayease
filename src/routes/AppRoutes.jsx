@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import Home from '../pages/Home';
+import PaymentCenter from '../pages/PaymentCenter';
 import Login from '../pages/auth_pages/Login';
 import Register from '../pages/auth_pages/Register';
 import NotFound from '../pages/NotFound';
@@ -22,6 +23,7 @@ export default function AppRoutes() {
 			<Route path="/hotel-service/*" element={<HotelServiceRoutes />} />
 			<Route path="/hotel-admin/*" element={<HotelAdminRoutes />} />
 			<Route path="/booking-service/*" element={<ProtectedRoute><BookingServiceRoutes /></ProtectedRoute>} />
+			<Route path="/payments" element={<PaymentCenter />} />
 			<Route path="*" element={<NotFound />} />
 		</Routes>
 	);
