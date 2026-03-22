@@ -3,6 +3,8 @@ import Home from '../pages/Home';
 import Login from '../pages/auth_pages/Login';
 import Register from '../pages/auth_pages/Register';
 import NotFound from '../pages/NotFound';
+import HotelServiceRoutes from './HotelServiceRoutes';
+import HotelAdminRoutes from './HotelAdminRoutes';
 import Profile from '../pages/Profile';
 import useAuth from '../hooks/useAuth';
 import AdminDashboard from '../pages/admin_pages/dashboard';
@@ -54,6 +56,8 @@ export default function AppRoutes() {
 		<Routes>
 			<Route path='/home' element={<Home />} />
 			<Route path="/" element={<Home />} />
+			<Route path="/hotel-service/*" element={<HotelServiceRoutes />} />
+			<Route path="/hotel-admin/*" element={<HotelAdminRoutes />} />
 			<Route path="/profile" element={
 				<ProtectedRoute>
 					<Profile />
