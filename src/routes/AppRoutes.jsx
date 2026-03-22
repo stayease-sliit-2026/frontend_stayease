@@ -6,7 +6,6 @@ import Login from '../pages/auth_pages/Login';
 import Register from '../pages/auth_pages/Register';
 import NotFound from '../pages/NotFound';
 import Profile from '../pages/Profile';
-import Profile from '../pages/Profile';
 import HotelServiceRoutes from './HotelServiceRoutes';
 import HotelAdminRoutes from './HotelAdminRoutes';
 import BookingServiceRoutes from './BookingServiceRoutes';
