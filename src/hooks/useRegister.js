@@ -37,12 +37,21 @@ export default function useRegister() {
     setLoading(true);
     setError('');
     try {
-      const response = await api.post(AppUrl.APP_URL_MAIN+AppUrl.REGISTER_URL, {
-        name,
-        email,
-        mobile,
-        password,
-      });
+      const adminToken = sessionStorage.getItem('adminAuthToken');
+      const response = await api.post(
+        AppUrl.APP_URL_USERS + AppUrl.ADMIN_REGISTER,
+        {
+          name,
+          email,
+          mobile,
+          password,
+        },
+        {
+          headers: {
+            Authorization: adminToken ? `Bearer ${adminToken}` : undefined,
+          },
+        }
+      );
       setLoading(false);
       console.log('Admin registration successful:', response.status);
       return response.status;
