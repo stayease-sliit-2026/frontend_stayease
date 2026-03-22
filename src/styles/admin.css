@@ -1,10 +1,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap');
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-body { font-family: 'DM Sans', sans-serif; }
+.login-root,
+.login-root *,
+.login-root *::before,
+.login-root *::after {
+  box-sizing: border-box;
+}
 
 .login-root {
+  font-family: 'DM Sans', sans-serif;
   min-height: 100vh;
   display: flex;
   background: #f4f6fb;
