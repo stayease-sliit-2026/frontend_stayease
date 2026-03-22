@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useLocation, useParams } from 'react-router-dom'
 import { FiAlertCircle, FiCalendar, FiCheckCircle, FiClock, FiLoader, FiMapPin, FiXCircle } from 'react-icons/fi'
 import { bookingPaths } from '../../utils/bookingPaths'
 import { cancelBooking, confirmBooking, getBookingById, hasBookingToken } from '../../services/bookingApi'
+import { createPayment } from '../../services/paymentService'
 import BackButton from '../../components/hotel_components/BackButton'
 
 const BRAND = {
@@ -27,6 +28,7 @@ function StatusBadge({ status }) {
 
 function BookingDetailsPage() {
   const { id } = useParams()
+  const location = useLocation()
   const isAuthed = hasBookingToken()
 
   const [booking, setBooking] = useState(null)
@@ -34,6 +36,7 @@ function BookingDetailsPage() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [actionLoading, setActionLoading] = useState('')
+  const [autoFlowTriggered, setAutoFlowTriggered] = useState(false)
 
   useEffect(() => {
     async function loadBooking() {
@@ -71,32 +74,35 @@ function BookingDetailsPage() {
   }
 
   async function handleConfirm() {
+    if (!booking) return
+    if ((booking.status || '').toLowerCase() !== 'pending') {
+      setError('Only pending bookings can be confirmed.')
+      return
+    }
+
     try {
       setActionLoading('confirm')
       setError('')
 
-      // TODO: Payment Service Integration
-      // Step 1: Initiate payment service (redirect or modal)
-      // const paymentResult = await initiatePaymentFlow({
-      //   bookingId: id,
-      //   amount: booking.totalPrice,
-      //   hotelId: booking.hotelId,
-      //   roomId: booking.roomId
-      // })
-      
-      // Step 2: After successful payment, confirm the booking
+      const paymentPayload = {
+        bookingId: booking._id || id,
+        userId: booking.userId || 'guest-user',
+        amount: Number(booking.totalPrice || 0),
+        currency: (booking.currency || 'USD').toUpperCase(),
+        paymentMethodId: booking.paymentMethodId || 'manual-confirmation',
+        contact: {
+          channel: 'email',
+          destination: booking.userEmail || 'user@example.com',
+        },
+      }
+
+      await createPayment(paymentPayload)
+
       const confirmResponse = await confirmBooking(id)
-      
-      // Step 3: Mark room as unavailable in hotel service (after payment success)
-      // await markRoomUnavailable(booking.hotelId, booking.roomId, {
-      //   checkIn: booking.checkIn,
-      //   checkOut: booking.checkOut,
-      //   bookingId: id
-      // })
-      
-      setSuccess(confirmResponse?.message || 'Booking confirmed successfully! Payment processed.')
+
+      setSuccess(confirmResponse?.message || 'Payment successful and booking confirmed.')
       await refreshBooking()
-      
+
       setTimeout(() => {
         setSuccess('')
       }, 3000)
@@ -106,6 +112,20 @@ function BookingDetailsPage() {
       setActionLoading('')
     }
   }
+
+  useEffect(() => {
+    if (!location.state?.autoPayAndConfirm) return
+    if (!booking || loading || autoFlowTriggered) return
+
+    if ((booking.status || '').toLowerCase() !== 'pending') {
+      setAutoFlowTriggered(true)
+      return
+    }
+
+    setAutoFlowTriggered(true)
+    handleConfirm()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [booking, loading, location.state, autoFlowTriggered])
 
   async function handleCancel() {
     const reason = window.prompt('Optional: cancellation reason') || ''
@@ -229,7 +249,7 @@ function BookingDetailsPage() {
                     style={{ backgroundColor: BRAND.medium }}
                   >
                     {actionLoading === 'confirm' ? <FiLoader className="animate-spin" size={14} /> : <FiCheckCircle size={14} />}
-                    Confirm Booking
+                    Pay & Confirm Booking
                   </button>
                 )}
 

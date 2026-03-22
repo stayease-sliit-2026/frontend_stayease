@@ -123,8 +123,8 @@ function UserBookingsPage() {
   async function handleConfirm(bookingId) {
     try {
       setActionLoadingId(bookingId)
-      // Redirect to details page where payment service integration happens
-      navigate(bookingPaths.details(bookingId))
+      // Redirect to details page where payment + confirm flow is handled.
+      navigate(bookingPaths.details(bookingId), { state: { autoPayAndConfirm: true } })
     } catch (err) {
       setError(err?.message || 'Unable to navigate to booking')
     } finally {
