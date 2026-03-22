@@ -145,6 +145,7 @@ function UserBookingsPage() {
       // await markRoomAvailable(hotelId, roomId, { checkIn, checkOut, bookingId })
       
       // Refresh the booking list
+      console.log(fullurl)
       const response = await getUserBookings({
         status: status || undefined,
         hotelId: hotelId || undefined,
