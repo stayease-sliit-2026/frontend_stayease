@@ -1,6 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
 import AdminUsersPage from '../../pages/admin_pages/userManagment/AdminUsersPage';
+import AdminPage from '../admin/AdminPage';
+import AdminHotelDetailsPage from '../admin/AdminHotelDetailsPage';
 import '../../styles/admin-dashboard.css';
 
 const STATS = [
@@ -35,6 +37,7 @@ const SYSTEMS = [
 export default function AdminDashboard() {
   const [admin, setAdmin] = useState(null);
   const [selectedSection, setSelectedSection] = useState('Dashboard');
+  const [selectedHotelId, setSelectedHotelId] = useState('');
 
   // Logout handler
     const handleLogout = () => {
@@ -82,7 +85,12 @@ export default function AdminDashboard() {
               <button
                 key={item.label}
                 className={`nav-item${selectedSection === item.label ? ' active' : ''}`}
-                onClick={() => setSelectedSection(item.label)}
+                onClick={() => {
+                  if (item.label === 'Hotels') {
+                    setSelectedHotelId('');
+                  }
+                  setSelectedSection(item.label);
+                }}
               >
                 <span className="nav-icon">{item.icon}</span>
                 {item.label}
@@ -227,6 +235,25 @@ export default function AdminDashboard() {
               <div style={{ padding: 0, background: 'none' }}>
                 {/* Render the full Admin User Management UI */}
                 <AdminUsersPage />
+              </div>
+            )}
+            {selectedSection === 'Hotels' && !selectedHotelId && (
+              <div style={{ padding: 0, background: 'none' }}>
+                <AdminPage
+                  embedded
+                  onManageHotel={(hotelId) => {
+                    setSelectedHotelId(hotelId);
+                  }}
+                />
+              </div>
+            )}
+            {selectedSection === 'Hotels' && selectedHotelId && (
+              <div style={{ padding: 0, background: 'none' }}>
+                <AdminHotelDetailsPage
+                  hotelId={selectedHotelId}
+                  embedded
+                  onBack={() => setSelectedHotelId('')}
+                />
               </div>
             )}
             {/* Add more sections as needed */}

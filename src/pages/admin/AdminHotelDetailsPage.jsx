@@ -18,8 +18,9 @@ import RoomForm from '../../components/hotel_components/RoomForm'
 import useHotelService from '../../hooks/useHotelService'
 import { hotelServicePaths } from '../../utils/hotelPaths'
 
-function AdminHotelDetailsPage() {
-  const { id } = useParams()
+function AdminHotelDetailsPage({ hotelId, onBack, embedded = false } = {}) {
+  const params = useParams()
+  const id = hotelId || params.id
   const navigate = useNavigate()
   const {
     addRoomToHotel,
@@ -155,6 +156,26 @@ function AdminHotelDetailsPage() {
     }
   }
 
+  const shellClass = embedded
+    ? 'bg-transparent py-0'
+    : 'min-h-screen bg-sky-100/80 py-6'
+
+  const containerClass = embedded
+    ? 'mx-auto w-full max-w-none px-0'
+    : 'mx-auto max-w-7xl px-4 sm:px-6'
+
+  const heroClass = embedded
+    ? 'mb-6 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm'
+    : 'mb-6 overflow-hidden rounded-3xl border border-sky-200 bg-sky-50 shadow-xl shadow-sky-200/70'
+
+  const sidebarCardClass = embedded
+    ? 'overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm'
+    : 'overflow-hidden rounded-2xl border border-sky-200 bg-sky-50 shadow-lg shadow-sky-200/70'
+
+  const roomsPanelClass = embedded
+    ? 'overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm'
+    : 'overflow-hidden rounded-3xl border border-sky-200 bg-sky-50 shadow-xl shadow-sky-200/70'
+
   if (loading) {
     return (
       <div className="mx-auto w-full max-w-5xl px-4 py-6">
@@ -176,7 +197,7 @@ function AdminHotelDetailsPage() {
         <p className="text-sm text-rose-600">{error}</p>
         <button
           type="button"
-          onClick={() => navigate(hotelServicePaths.admin)}
+          onClick={() => (onBack ? onBack() : navigate(hotelServicePaths.admin))}
           aria-label="Back to Admin"
           title="Back to Admin"
           className="mt-4 inline-flex h-9 w-9 items-center justify-center rounded-md border border-[#9fded6] bg-white text-[#0a2342] hover:bg-[#eaf7f5]"
@@ -188,15 +209,15 @@ function AdminHotelDetailsPage() {
   }
 
   return (
-    <section className="min-h-screen bg-sky-100/80 py-6">
+    <section className={shellClass}>
       {/* Back button */}
-      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+      <div className={containerClass}>
         <button
           type="button"
-          onClick={() => navigate(hotelServicePaths.admin)}
+          onClick={() => (onBack ? onBack() : navigate(hotelServicePaths.admin))}
           aria-label="Back to Admin"
           title="Back to Admin"
-          className="mb-5 inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[#9fded6] text-[#0a2342] hover:bg-[#eaf7f5]"
+          className="mb-5 inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-[#0a2342] shadow-sm hover:bg-slate-50"
         >
           <FiArrowLeft size={16} />
         </button>
@@ -221,12 +242,12 @@ function AdminHotelDetailsPage() {
       </div>
 
       {/* Main Layout: Left Sidebar + Right Content */}
-      <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 sm:px-6 lg:flex-row">
+      <div className={embedded ? 'flex w-full flex-col gap-6 lg:flex-row' : 'mx-auto flex max-w-7xl flex-col gap-6 px-4 sm:px-6 lg:flex-row'}>
         {/* LEFT SIDEBAR - Hotel Details */}
         {hotel && (
           <aside className="flex flex-col gap-4 lg:w-72 lg:flex-shrink-0">
             {/* Hotel Quick Info Card */}
-            <div className="overflow-hidden rounded-2xl border border-sky-200 bg-sky-50 shadow-lg shadow-sky-200/70">
+            <div className={sidebarCardClass}>
               {/* Hotel Image */}
               <div className="relative h-40 w-full overflow-hidden bg-gradient-to-br from-[#0a2342] to-[#27476b]">
                 {hotel.images?.[0] ? (
@@ -320,7 +341,7 @@ function AdminHotelDetailsPage() {
         <div className="flex-1">
           {/* Hotel Hero Card */}
           {hotel && (
-            <div className="mb-6 overflow-hidden rounded-3xl border border-sky-200 bg-sky-50 shadow-xl shadow-sky-200/70">
+            <div className={heroClass}>
             <div className="relative h-64 md:h-72">
               {hotel.images?.[0] ? (
                 <img src={hotel.images[0]} alt={hotel.name} className="h-full w-full object-cover" />
@@ -422,9 +443,9 @@ function AdminHotelDetailsPage() {
           )}
 
           {/* Rooms Panel */}
-          <div className="overflow-hidden rounded-3xl border border-sky-200 bg-sky-50 shadow-xl shadow-sky-200/70">
+          <div className={roomsPanelClass}>
             {/* Rooms header */}
-            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#0a2342]/10 bg-[#eaf7f5]/50 px-6 py-4">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-[#f8fafc] px-6 py-4">
               <div>
                 <h2 className="text-lg font-semibold text-[#0a2342]">
                   Rooms{rooms.length > 0 ? ` (${rooms.length})` : ''}
@@ -434,7 +455,7 @@ function AdminHotelDetailsPage() {
               <button
                 type="button"
                 onClick={handleToggleAddRoom}
-                className="flex items-center gap-2 rounded-lg bg-[#1d4ed8] px-4 py-2 text-sm font-medium text-white hover:bg-[#1e40af]"
+                className="flex items-center gap-2 rounded-lg bg-[#2563eb] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#1d4ed8]"
               >
                 {showRoomForm && !editingRoom ? <FiX size={14} /> : <FiPlus size={14} />}
                 {showRoomForm && !editingRoom ? 'Cancel' : 'Add Room'}
@@ -446,7 +467,7 @@ function AdminHotelDetailsPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-[#0a2342]/10 bg-[#eaf7f5]/60 text-left text-xs font-semibold uppercase tracking-wider text-[#0a2342]">
+                    <tr className="border-b border-slate-200 bg-[#f8fafc] text-left text-xs font-semibold uppercase tracking-wider text-slate-600">
                       <th className="px-6 py-3">Image</th>
                       <th className="px-6 py-3">Room Type</th>
                       <th className="px-6 py-3">Price / Night</th>
@@ -457,7 +478,7 @@ function AdminHotelDetailsPage() {
                   </thead>
                   <tbody className="divide-y divide-[#0a2342]/5">
                     {rooms.map((room) => (
-                      <tr key={room._id} className="hover:bg-[#eaf7f5]/30">
+                      <tr key={room._id} className="border-b border-slate-100 hover:bg-slate-50">
                         <td className="px-6 py-4">
                           {room.images?.[0] ? (
                             <div className="group relative inline-block cursor-pointer" onClick={() => handleOpenViewRoom(room)}>
@@ -473,7 +494,7 @@ function AdminHotelDetailsPage() {
                               )}
                             </div>
                           ) : (
-                              <div className="flex h-20 w-28 items-center justify-center rounded-lg bg-sky-100 text-xs font-medium text-slate-500">
+                              <div className="flex h-20 w-28 items-center justify-center rounded-lg bg-slate-100 text-xs font-medium text-slate-500">
                               No Image
                             </div>
                           )}
@@ -512,7 +533,7 @@ function AdminHotelDetailsPage() {
                             <button
                               type="button"
                               onClick={() => handleOpenViewRoom(room)}
-                              className="flex items-center gap-1 rounded-md border border-[#9fded6] px-2.5 py-1.5 text-xs font-medium text-[#0a2342] hover:bg-[#eaf7f5]"
+                              className="flex items-center gap-1 rounded-md border border-slate-200 px-2.5 py-1.5 text-xs font-medium text-[#0a2342] hover:bg-slate-50"
                             >
                               <FiEye size={12} />
                               View

@@ -6,6 +6,7 @@ import Login from '../pages/auth_pages/Login';
 import Register from '../pages/auth_pages/Register';
 import NotFound from '../pages/NotFound';
 import Profile from '../pages/Profile';
+import Profile from '../pages/Profile';
 import HotelServiceRoutes from './HotelServiceRoutes';
 import HotelAdminRoutes from './HotelAdminRoutes';
 import BookingServiceRoutes from './BookingServiceRoutes';
@@ -63,9 +64,13 @@ export default function AppRoutes() {
 		return (
 			<Routes>
 				<Route path="/admin/dashboard" element={<AdminDashboard />} />
+				<Route path="/hotel-admin/*" element={<HotelAdminRoutes />} />
 				<Route path="/admin/login" element={<AdminLogin />} />
 				<Route path="/admin/register" element={<AdminRegister />} />
-				<Route path="*" element={location.pathname === "/admin/dashboard" ? <AdminDashboard /> : <Navigate to="/admin/dashboard" replace />} />
+				<Route
+					path="*"
+					element={location.pathname.startsWith('/hotel-admin') ? <Navigate to="/hotel-admin" replace /> : <Navigate to="/admin/dashboard" replace />}
+				/>
 			</Routes>
 		);
 	}
@@ -82,6 +87,8 @@ export default function AppRoutes() {
 			} />
 			<Route path="/login" element={<Login />} />
 			<Route path="/register" element={<Register />} />
+			<Route path="/admin/login" element={<AdminLogin />} />
+			<Route path="/admin/register" element={<AdminRegister />} />
 			<Route path="/admin/login" element={<AdminLogin />} />
 			<Route path="/admin/register" element={<AdminRegister />} />
 			<Route path="/" element={<Home />} />
