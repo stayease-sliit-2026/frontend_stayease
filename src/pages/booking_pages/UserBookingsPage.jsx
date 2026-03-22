@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { FiAlertCircle, FiCheckCircle, FiEye, FiLoader, FiRefreshCw, FiXCircle } from 'react-icons/fi'
 import { bookingPaths } from '../../utils/bookingPaths'
-import { cancelBooking, confirmBooking, getUserBookings, getUserBookingStats, hasBookingToken } from '../../services/bookingApi'
+import { cancelBooking, getUserBookings, getUserBookingStats, hasBookingToken } from '../../services/bookingApi'
 
 const BRAND = {
   dark: '#334eac',
@@ -123,8 +123,16 @@ function UserBookingsPage() {
   async function handleConfirm(bookingId) {
     try {
       setActionLoadingId(bookingId)
-      // Redirect to details page where payment service integration happens
-      navigate(bookingPaths.details(bookingId))
+      const selectedBooking = bookings.find((item) => item?._id === bookingId)
+      const query = new URLSearchParams({
+        flow: 'booking-confirm',
+        bookingId,
+        amount: String(selectedBooking?.totalPrice || ''),
+        currency: 'USD',
+        returnTo: bookingPaths.details(bookingId),
+      })
+
+      navigate(`/payments?${query.toString()}`)
     } catch (err) {
       setError(err?.message || 'Unable to navigate to booking')
     } finally {

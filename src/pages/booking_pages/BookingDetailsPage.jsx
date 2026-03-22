@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { FiAlertCircle, FiCalendar, FiCheckCircle, FiClock, FiLoader, FiMapPin, FiXCircle } from 'react-icons/fi'
 import { bookingPaths } from '../../utils/bookingPaths'
-import { cancelBooking, confirmBooking, getBookingById, hasBookingToken } from '../../services/bookingApi'
+import { cancelBooking, getBookingById, hasBookingToken } from '../../services/bookingApi'
 import BackButton from '../../components/hotel_components/BackButton'
 
 const BRAND = {
@@ -27,6 +27,8 @@ function StatusBadge({ status }) {
 
 function BookingDetailsPage() {
   const { id } = useParams()
+  const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
   const isAuthed = hasBookingToken()
 
   const [booking, setBooking] = useState(null)
@@ -57,6 +59,24 @@ function BookingDetailsPage() {
     loadBooking()
   }, [id, isAuthed])
 
+  useEffect(() => {
+    if (searchParams.get('paymentSuccess') !== '1') {
+      return
+    }
+
+    setSuccess('Payment completed and booking confirmed successfully.')
+
+    const nextParams = new URLSearchParams(searchParams)
+    nextParams.delete('paymentSuccess')
+    setSearchParams(nextParams, { replace: true })
+
+    const timer = setTimeout(() => {
+      setSuccess('')
+    }, 3500)
+
+    return () => clearTimeout(timer)
+  }, [searchParams, setSearchParams])
+
   async function refreshBooking() {
     try {
       setLoading(true)
@@ -75,31 +95,15 @@ function BookingDetailsPage() {
       setActionLoading('confirm')
       setError('')
 
-      // TODO: Payment Service Integration
-      // Step 1: Initiate payment service (redirect or modal)
-      // const paymentResult = await initiatePaymentFlow({
-      //   bookingId: id,
-      //   amount: booking.totalPrice,
-      //   hotelId: booking.hotelId,
-      //   roomId: booking.roomId
-      // })
-      
-      // Step 2: After successful payment, confirm the booking
-      const confirmResponse = await confirmBooking(id)
-      
-      // Step 3: Mark room as unavailable in hotel service (after payment success)
-      // await markRoomUnavailable(booking.hotelId, booking.roomId, {
-      //   checkIn: booking.checkIn,
-      //   checkOut: booking.checkOut,
-      //   bookingId: id
-      // })
-      
-      setSuccess(confirmResponse?.message || 'Booking confirmed successfully! Payment processed.')
-      await refreshBooking()
-      
-      setTimeout(() => {
-        setSuccess('')
-      }, 3000)
+      const query = new URLSearchParams({
+        flow: 'booking-confirm',
+        bookingId: id,
+        amount: String(booking?.totalPrice || ''),
+        currency: 'USD',
+        returnTo: bookingPaths.details(id),
+      })
+
+      navigate(`/payments?${query.toString()}`)
     } catch (err) {
       setError(err?.message || 'Unable to confirm booking. Payment may have failed.')
     } finally {

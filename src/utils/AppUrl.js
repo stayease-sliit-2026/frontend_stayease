@@ -1,10 +1,10 @@
 
 const AppUrl = {
-   APP_URL_MAIN : 'http://localhost:3001/',
+   APP_URL_MAIN : '',
 
-    LOGIN_URL :'auth/login',
-    REGISTER_URL :'auth/register',
-    VERIFY_TOKEN : 'auth/verify',
+    LOGIN_URL :'/auth/login',
+    REGISTER_URL :'/auth/register',
+    VERIFY_TOKEN : '/auth/verify',
    
 }
 

@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import { CardElement, Elements, useElements, useStripe } from '@stripe/react-stripe-js';
+import { jwtDecode } from 'jwt-decode';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import Navbar from '../components/layout/Navbar';
 import {
   createPayment,
@@ -9,19 +11,38 @@ import {
   refundPayment,
   sendInternalNotification,
 } from '../services/paymentService';
+import { confirmBooking } from '../services/bookingApi';
 
 const stripePublishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '';
 const stripePromise = stripePublishableKey ? loadStripe(stripePublishableKey) : null;
 
 function PaymentCenterContent() {
-
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const stripe = useStripe();
   const elements = useElements();
 
-  const [bookingId, setBookingId] = useState('BK-FRONT-1001');
-  const [userId, setUserId] = useState('USR1001');
-  const [amount, setAmount] = useState('25000');
-  const [currency, setCurrency] = useState('LKR');
+  const flow = searchParams.get('flow') || '';
+  const bookingIdFromQuery = searchParams.get('bookingId') || '';
+  const amountFromQuery = searchParams.get('amount') || '';
+  const currencyFromQuery = (searchParams.get('currency') || '').toUpperCase();
+  const returnTo = searchParams.get('returnTo') || '/booking-service/my-bookings';
+  const token = sessionStorage.getItem('authToken') || '';
+
+  let tokenUserId = '';
+  if (token) {
+    try {
+      const decoded = jwtDecode(token);
+      tokenUserId = decoded?.id || decoded?.userId || decoded?.sub || '';
+    } catch (_error) {
+      tokenUserId = '';
+    }
+  }
+
+  const [bookingId, setBookingId] = useState(bookingIdFromQuery || '');
+  const [userId, setUserId] = useState(tokenUserId || '');
+  const [amount, setAmount] = useState(amountFromQuery || '');
+  const [currency, setCurrency] = useState(currencyFromQuery || 'USD');
   const [paymentMethodId, setPaymentMethodId] = useState('');
   const [channel, setChannel] = useState('email');
   const [destination, setDestination] = useState('user@example.com');
@@ -133,6 +154,72 @@ function PaymentCenterContent() {
     });
   }
 
+  async function handlePayAndConfirmBooking() {
+    await runAction(async () => {
+      if (!bookingId) {
+        throw new Error('Booking ID is required to complete payment confirmation flow');
+      }
+
+      if (!userId) {
+        throw new Error('User ID is required. Please log in again to refresh your token.');
+      }
+
+      let resolvedPaymentMethodId = paymentMethodId;
+
+      if (!resolvedPaymentMethodId && stripe && elements) {
+        const card = elements.getElement(CardElement);
+        if (!card) {
+          throw new Error('Card input is not ready yet');
+        }
+
+        const result = await stripe.createPaymentMethod({
+          type: 'card',
+          card,
+          billing_details: {
+            email: channel === 'email' ? destination : undefined,
+          },
+        });
+
+        if (result.error) {
+          throw new Error(result.error.message || 'Failed to create Stripe payment method');
+        }
+
+        resolvedPaymentMethodId = result.paymentMethod?.id || '';
+        setPaymentMethodId(resolvedPaymentMethodId);
+      }
+
+      if (!resolvedPaymentMethodId) {
+        throw new Error('Provide Payment Method ID or card details to continue');
+      }
+
+      const paymentResponse = await createPayment({
+        bookingId,
+        userId,
+        amount: Number(amount),
+        currency,
+        paymentMethodId: resolvedPaymentMethodId,
+        contact: { channel, destination },
+      });
+
+      const paymentStatus = paymentResponse?.data?.status || paymentResponse?.status;
+      if (String(paymentStatus || '').toLowerCase() !== 'success') {
+        throw new Error('Payment was not successful. Booking confirmation was not completed.');
+      }
+
+      const confirmResponse = await confirmBooking(bookingId);
+
+      setTimeout(() => {
+        const separator = returnTo.includes('?') ? '&' : '?';
+        navigate(`${returnTo}${separator}paymentSuccess=1`);
+      }, 900);
+
+      return {
+        payment: paymentResponse,
+        booking: confirmResponse,
+      };
+    });
+  }
+
   return (
     <div style={{ minHeight: '100vh', background: '#e2e8f0' }}>
       <Navbar />
@@ -207,6 +294,11 @@ function PaymentCenterContent() {
 
         <section style={cardStyle}>
           <h3 style={{ marginTop: 0 }}>Payment Actions</h3>
+          {flow === 'booking-confirm' && (
+            <p style={{ color: '#155e75', fontWeight: 700 }}>
+              Booking confirm flow detected. Complete payment below, then booking will be confirmed automatically.
+            </p>
+          )}
           <button
             style={buttonStyle}
             disabled={loading || (stripePublishableKey && !cardReady)}
@@ -214,6 +306,15 @@ function PaymentCenterContent() {
           >
             Create Payment
           </button>
+          {flow === 'booking-confirm' && (
+            <button
+              style={{ ...buttonStyle, background: '#1d4ed8' }}
+              disabled={loading || !bookingId || !amount || !userId || (stripePublishableKey && !cardReady)}
+              onClick={handlePayAndConfirmBooking}
+            >
+              Pay And Confirm Booking
+            </button>
+          )}
           <button
             style={buttonStyle}
             disabled={loading}
