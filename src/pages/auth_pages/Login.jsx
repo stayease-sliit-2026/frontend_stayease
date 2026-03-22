@@ -21,7 +21,6 @@ function Login() {
         }
         const result = await loginRequest(email, password);
         if (result && result.status === 200 && result.data && result.data.token) {
-            console.log(result);
             login(email, result.data.token);
             window.location.reload(); // Refresh the page after login
         }

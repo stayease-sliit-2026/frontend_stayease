@@ -92,6 +92,7 @@ function UserBookingsPage() {
           }),
           getUserBookingStats(),
         ])
+        
 
         setBookings(bookingsResponse?.data || [])
         setPagination(bookingsResponse?.pagination || { total: 0, limit, skip, hasMore: false })
