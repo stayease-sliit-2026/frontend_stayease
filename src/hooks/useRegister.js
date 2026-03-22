@@ -2,6 +2,12 @@ import { useState } from 'react';
 import api from '../services/api';
 import AppUrl from '../utils/AppUrl';
 
+function buildAuthUrl(path) {
+  const base = (import.meta.env.VITE_AUTH_SERVICE_URL || AppUrl.APP_URL_MAIN || '').replace(/\/$/, '');
+  const normalizedPath = `/${String(path || '').replace(/^\/+/, '')}`;
+  return base ? `${base}${normalizedPath}` : normalizedPath;
+}
+
 export default function useRegister() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -10,8 +16,9 @@ export default function useRegister() {
     setLoading(true);
     setError('');
     try {
-      console.log('Attempting registration with:', { name, email, password, mobile, url: AppUrl.APP_URL_MAIN + AppUrl.REGISTER_URL });
-      const response = await api.post(AppUrl.APP_URL_MAIN + AppUrl.REGISTER_URL, {
+      const registerUrl = buildAuthUrl(AppUrl.REGISTER_URL);
+      console.log('Attempting registration with:', { name, email, password, mobile, url: registerUrl });
+      const response = await api.post(registerUrl, {
         name,
         email,
         password,
