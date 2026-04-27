@@ -12,8 +12,10 @@ export default function Register() {
   const [mobile, setMobile] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
-  const { login, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
+
   const navigate = useNavigate();
+
   const { registerRequest, loading, error, setError } = useRegister();
 
   const handleSubmit = async (e) => {
@@ -34,8 +36,7 @@ export default function Register() {
     }
     const result = await registerRequest(name, email, password, mobile);
     if (result) {
-      login(email);
-      navigate('/', { replace: true });
+      navigate('/login', { replace: true });
     }
     // error is handled by the hook
   };

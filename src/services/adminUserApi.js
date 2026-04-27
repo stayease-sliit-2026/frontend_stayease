@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:8080/users',
+  baseURL: 'https://ctse-gateway-555972249634.asia-south1.run.app/users',
 });
 
 api.interceptors.request.use(

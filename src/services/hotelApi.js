@@ -14,7 +14,7 @@ const api = axios.create({
 function getAuthToken() {
   return (
     sessionStorage.getItem('adminAuthToken') ||
-    sessionStorage.getItem('authToken') ||
+    sessionStorage.getItem('authToken') |
     localStorage.getItem('authToken') ||
     localStorage.getItem('adminAuthToken') ||
     localStorage.getItem('token') ||
@@ -48,8 +48,10 @@ function getErrorMessage(error) {
 export async function listHotels(params = {}) {
   try {
     const response = await api.get('/hotels', { params })
+    console.log('listHotels response:', response);
     return response.data
   } catch (error) {
+    console.error('Error fetching hotels:', error);
     throw new Error(getErrorMessage(error))
   }
 }

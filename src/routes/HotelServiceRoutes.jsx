@@ -9,9 +9,9 @@ function HotelServiceRoutes() {
       <Navbar />
       <main>
         <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/hotels/:id" element={<HotelDetailsPage />} />
-          <Route path="*" element={<Navigate to="/hotel-service" replace />} />
+          <Route index element={<HomePage />} />
+          <Route path="hotels/:id" element={<HotelDetailsPage />} />
+          <Route path="*" element={<Navigate to="." replace />} />
         </Routes>
       </main>
     </div>

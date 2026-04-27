@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react';
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   // single API base / gateway used in development
-  const apiBase = env.VITE_API_BASE_URL || 'http://localhost:8080';
+  const apiBase = env.VITE_API_BASE_URL || 'https://ctse-gateway-555972249634.asia-south1.run.app';
 
   return {
     plugins: [react()],

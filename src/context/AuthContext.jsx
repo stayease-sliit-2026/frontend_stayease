@@ -1,41 +1,44 @@
 import { createContext, useMemo, useState } from 'react';
 
-// Named export for context
 export const AuthContext = createContext(null);
 
-// Named export for provider
 export function AuthProvider({ children }) {
-	const [user, setUser] = useState(() => {
-		const saved = localStorage.getItem('stayease_user');
-		return saved ? JSON.parse(saved) : null;
-	});
+  const [user, setUser] = useState(() => {
+    const saved = localStorage.getItem('stayease_user');
+    return saved ? JSON.parse(saved) : null;
+  });
 
-	const login = (email, token) => {
-		console.log('Logging in with email:', email, 'and token:', token); // ✅ Debug log
-		const nextUser = { email };
-		localStorage.setItem('stayease_user', JSON.stringify(nextUser));
-		sessionStorage.setItem('authToken', token); // ✅ sync token=
-		setUser(nextUser);
-	};
+  const login = (email, token) => {
+    if (!token || token === 'undefined' || token === 'null') {
+      throw new Error('Valid auth token is required to login');
+    }
 
-	const logout = () => {
-		localStorage.removeItem('stayease_user');
-		sessionStorage.removeItem('authToken'); // ✅ cleanup
-		setUser(null);
-	};
+    const nextUser = { email };
+    localStorage.setItem('stayease_user', JSON.stringify(nextUser));
+    sessionStorage.setItem('authToken', token);
+    setUser(nextUser);
+  };
 
-	const value = useMemo(
-		() => ({
-			user,
-			isAuthenticated: Boolean(user),
-			login,
-			logout,
-		}),
-		[user]
-	);
+  const logout = () => {
+    localStorage.removeItem('stayease_user');
+    sessionStorage.removeItem('authToken');
+    setUser(null);
+  };
 
-	return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  const authToken = sessionStorage.getItem('authToken');
+  const hasValidToken = Boolean(authToken && authToken !== 'undefined' && authToken !== 'null');
+
+  const value = useMemo(
+    () => ({
+      user,
+      isAuthenticated: Boolean(user) && hasValidToken,
+      login,
+      logout,
+    }),
+    [user, hasValidToken]
+  );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
-// Default export for provider for compatibility
 export default AuthProvider;

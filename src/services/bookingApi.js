@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const BOOKING_BASE_URL =
-  'https://stayease-user--0000001.ambitiousforest-4a1ef578.southeastasia.azurecontainerapps.io'
+  'https://ctse-gateway-555972249634.asia-south1.run.app/bookings' 
 
 const bookingApi = axios.create({
   baseURL: BOOKING_BASE_URL,
